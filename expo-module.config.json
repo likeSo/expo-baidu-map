@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android", "web"],
+  "apple": {
+    "modules": ["ExpoBaiduMapModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.baidumap.ExpoBaiduMapModule"]
+  }
+}
