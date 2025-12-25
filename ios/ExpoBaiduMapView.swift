@@ -1,38 +1,78 @@
 import ExpoModulesCore
 import WebKit
+import BaiduMapAPI_Map
 
-// This view will be used as a native component. Make sure to inherit from `ExpoView`
-// to apply the proper styling (e.g. border radius and shadows).
 class ExpoBaiduMapView: ExpoView {
-  let webView = WKWebView()
-  let onLoad = EventDispatcher()
-  var delegate: WebViewDelegate?
-
-  required init(appContext: AppContext? = nil) {
-    super.init(appContext: appContext)
-    clipsToBounds = true
-    delegate = WebViewDelegate { url in
-      self.onLoad(["url": url])
+    let mapView = BMKMapView(frame: .zero)
+    
+    var active: Bool = true
+    var zoomLevel: Double = 1
+    
+    var circles: [Circle]?
+    var polygons: [Polygon]?
+    
+    
+    let onLoad = EventDispatcher()
+    var delegate: MapViewDelegate?
+    
+    required init(appContext: AppContext? = nil) {
+        super.init(appContext: appContext)
+        clipsToBounds = true
+        delegate = MapViewDelegate { url in
+            self.onLoad(["url": url])
+        }
+        
+        addSubview(mapView)
     }
-    webView.navigationDelegate = delegate
-    addSubview(webView)
-  }
-
-  override func layoutSubviews() {
-    webView.frame = bounds
-  }
+    
+    override func layoutSubviews() {
+        mapView.frame = bounds
+    }
+    
+    override func didSetProps(_ changedProps: [String]!) {
+        for propName in changedProps {
+            switch propName {
+            case "circles", "polygons":
+                reloadOverlays()
+            default: break
+            }
+        }
+    }
+    
+    private func reloadOverlays() {
+        if let overlays = mapView.overlays {
+            mapView.removeOverlays(overlays)
+        }
+        
+        var overlays: [any BMKOverlay] = []
+        circles?.forEach { circle in
+            if let overlay = BMKCircle(center: CLLocationCoordinate2D(latitude: circle.center.latitude,
+                                                                   longitude: circle.center.longitude),
+                                       radius: circle.radius) {
+                overlays.append(overlay)
+            }
+        }
+        
+        polygons?.forEach { polygon in
+            var coordinates = polygon.coordinates.map{ $0.toCLCoordinate() }
+            if let overlay = BMKPolygon(coordinates: &coordinates, count: UInt(coordinates.count)) {
+                overlays.append(overlay)
+            }
+        }
+        if !overlays.isEmpty {
+            mapView.addOverlays(overlays)
+        }
+    }
 }
 
-class WebViewDelegate: NSObject, WKNavigationDelegate {
-  let onUrlChange: (String) -> Void
+class MapViewDelegate: NSObject, BMKMapViewDelegate {
 
-  init(onUrlChange: @escaping (String) -> Void) {
-    self.onUrlChange = onUrlChange
-  }
 
-  func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
-    if let url = webView.url {
-      onUrlChange(url.absoluteString)
+    
+    func mapView(_ mapView: BMKMapView, viewFor overlay: any BMKOverlay) -> BMKOverlayView? {
+        if let circle = overlay as? BMKCircle {
+            let circleView = BMKCircleView(circle: circle)
+            circleView
+        }
     }
-  }
 }
