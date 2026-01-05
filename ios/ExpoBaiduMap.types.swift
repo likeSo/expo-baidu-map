@@ -8,6 +8,7 @@
 import Foundation
 import ExpoModulesCore
 import BaiduMapAPI_Base
+import BaiduMapAPI_Map
 
 struct Coordinate2D: Record {
     init() { }
@@ -92,7 +93,7 @@ struct Polygon: Record {
     var count = 0
 }
 
-struct Circle: Record {
+final class Circle: Record {
     init() { }
     init(center: Coordinate2D = .init(), radius: Double = 0.0) {
         self.center = center
@@ -103,4 +104,20 @@ struct Circle: Record {
     var center: Coordinate2D = .init()
     @Field
     var radius = 0.0
+    @Field
+    var fillColor: UIColor?
+    @Field
+    var strokeColor: UIColor?
+    
+    @Field
+    var lineWidth: CGFloat?
+}
+
+final class TextMarker: Record {
+    
+    @Field
+    var center: Coordinate2D = .init()
+    
+    @Field
+    var text: String?
 }

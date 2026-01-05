@@ -40,4 +40,14 @@ android {
   lintOptions {
     abortOnError false
   }
+
+  sourceSets {
+      main {
+        jniLibs.srcDirs = ['libs/jniLibs']
+    }
+  }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.aar'])
 }

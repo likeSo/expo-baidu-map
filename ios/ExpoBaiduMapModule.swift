@@ -126,6 +126,10 @@ public class ExpoBaiduMapModule: Module {
             view.polygons = polygons
         }
         
+        Prop("textMarkers") { (view: ExpoBaiduMapView, textMarkers: [TextMarker]) in
+            view.textMarkers = textMarkers
+        }
+        
         
         AsyncFunction("zoomIn") { (view: ExpoBaiduMapView) in
             view.mapView.zoomIn()

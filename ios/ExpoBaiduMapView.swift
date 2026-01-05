@@ -10,6 +10,7 @@ class ExpoBaiduMapView: ExpoView {
     
     var circles: [Circle]?
     var polygons: [Polygon]?
+    var textMarkers: [TextMarker]?
     
     
     let onLoad = EventDispatcher()
@@ -18,9 +19,7 @@ class ExpoBaiduMapView: ExpoView {
     required init(appContext: AppContext? = nil) {
         super.init(appContext: appContext)
         clipsToBounds = true
-        delegate = MapViewDelegate { url in
-            self.onLoad(["url": url])
-        }
+        delegate = MapViewDelegate()
         
         addSubview(mapView)
     }
@@ -32,7 +31,7 @@ class ExpoBaiduMapView: ExpoView {
     override func didSetProps(_ changedProps: [String]!) {
         for propName in changedProps {
             switch propName {
-            case "circles", "polygons":
+            case "circles", "polygons", "markers":
                 reloadOverlays()
             default: break
             }
@@ -59,6 +58,13 @@ class ExpoBaiduMapView: ExpoView {
                 overlays.append(overlay)
             }
         }
+        
+        textMarkers?.forEach { marker in
+            if let textMarker = BMKText(center: marker.center.toCLCoordinate(), text: marker.text ?? "") {
+                overlays.append(textMarker)
+            }
+        }
+        
         if !overlays.isEmpty {
             mapView.addOverlays(overlays)
         }
@@ -66,13 +72,30 @@ class ExpoBaiduMapView: ExpoView {
 }
 
 class MapViewDelegate: NSObject, BMKMapViewDelegate {
-
-
     
     func mapView(_ mapView: BMKMapView, viewFor overlay: any BMKOverlay) -> BMKOverlayView? {
+        var overlayView = mapView.view(for: overlay)
         if let circle = overlay as? BMKCircle {
-            let circleView = BMKCircleView(circle: circle)
-            circleView
+            if overlayView == nil {
+                overlayView = BMKCircleView(circle: circle)
+            }
+            if let circleConfig = circle.circleData, let circleView = overlayView as? BMKCircleView {
+                circleView.fillColor = circleConfig.fillColor
+                circleView.strokeColor = circleConfig.strokeColor
+                circleView.lineWidth = circleConfig.lineWidth ?? 0
+            }
+            
+        } else if let polygon = overlay as? BMKPolygon {
+            if overlayView == nil {
+                overlayView = BMKPolygonView(polygon: polygon)
+            }
+            
+        } else if let text = overlay as? BMKText {
+            if overlayView == nil {
+                overlayView = BMKTextView(textOverlay: text)
+            }
+            
         }
+        return overlayView
     }
 }

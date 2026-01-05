@@ -1,0 +1,283 @@
+package expo.modules.baidumap
+
+import com.baidu.mapapi.model.LatLng
+import com.baidu.mapapi.model.LatLngBounds
+import expo.modules.kotlin.records.Record
+import expo.modules.kotlin.records.Field
+
+
+// Coordinate2D.kt
+open class Coordinate2D : Record {
+    @Field
+    var latitude: Double = 0.0
+
+    @Field
+    var longitude: Double = 0.0
+
+    constructor() : this(0.0, 0.0)
+
+    constructor(latitude: Double = 0.0, longitude: Double = 0.0) {
+        this.latitude = latitude
+        this.longitude = longitude
+    }
+
+//    fun toCLCoordinate(): CLLocationCoordinate2D {
+//        return CLLocationCoordinate2D(latitude, longitude)
+//    }
+//
+//    fun toBMKCoordinate(): BMKCoordinate {
+//        return BMKCoordinate(latitude, longitude)
+//    }
+//
+    fun toLatLng(): LatLng {
+        return LatLng(latitude, longitude)
+    }
+}
+
+open class CoordinateSpan : Record {
+    @Field
+    var latitudeDelta: Double = 0.0
+
+    @Field
+    var longitudeDelta: Double = 0.0
+
+    constructor() : this(0.0, 0.0)
+
+    constructor(latitudeDelta: Double = 0.0, longitudeDelta: Double = 0.0) {
+        this.latitudeDelta = latitudeDelta
+        this.longitudeDelta = longitudeDelta
+    }
+
+//    fun toBMKSpan(): BMKCoordinateSpan {
+//        return BMKCoordinateSpan(latitudeDelta, longitudeDelta)
+//    }
+}
+
+open class CoordinateRegion : Record {
+    @Field
+    var center: Coordinate2D = Coordinate2D()
+
+    @Field
+    var span: CoordinateSpan = CoordinateSpan()
+
+    fun toLatLngBounds(): LatLngBounds {
+        val northEast = LatLng(
+            center.latitude + span.latitudeDelta / 2,
+            center.longitude + span.longitudeDelta / 2
+        )
+        val southWest = LatLng(
+            center.latitude - span.latitudeDelta / 2,
+            center.longitude - span.longitudeDelta / 2
+        )
+        return LatLngBounds.Builder()
+            .include(southWest)
+            .include(northEast)
+            .build()
+    }
+
+//    fun toBMKRegion(): BMKCoordinateRegion {
+//        return BMKCoordinateRegion(
+//            center = center.toBMKCoordinate(),
+//            span = span.toBMKSpan()
+//        )
+//    }
+//
+//    fun toBMKBounds(): BMKBounds {
+//        val northEast = BMKCoordinate(
+//            center.latitude + span.latitudeDelta / 2,
+//            center.longitude + span.longitudeDelta / 2
+//        )
+//        val southWest = BMKCoordinate(
+//            center.latitude - span.latitudeDelta / 2,
+//            center.longitude - span.longitudeDelta / 2
+//        )
+//        return BMKBounds(northEast, southWest)
+//    }
+}
+
+open class Point : Record {
+    @Field
+    var x: Int = 0
+
+    @Field
+    var y: Int = 0
+
+    constructor() : this(0, 0)
+
+    constructor(x: Int = 0, y: Int = 0) {
+        this.x = x
+        this.y = y
+    }
+
+//    fun toBMKPoint(): BMKPoint {
+//        return BMKPoint(x, y)
+//    }
+}
+
+open class Size : Record {
+    @Field
+    var width: Double = 0.0
+
+    @Field
+    var height: Double = 0.0
+
+    constructor() : this(0.0, 0.0)
+
+    constructor(width: Double = 0.0, height: Double = 0.0) {
+        this.width = width
+        this.height = height
+    }
+
+//    fun toBMKSize(): BMKSize {
+//        return BMKSize(width, height)
+//    }
+}
+
+open class Polygon : Record {
+    @Field
+    var coordinates: List<Coordinate2D> = emptyList()
+
+    @Field
+    var count: Int = 0
+
+    constructor() : this(emptyList(), 0)
+
+    constructor(coordinates: List<Coordinate2D> = emptyList(), count: Int = 0) {
+        this.coordinates = coordinates
+        this.count = count
+    }
+
+//    fun fromBMKPolygon(bmkPolygon: BMKPolygon): Polygon {
+//        val points = mutableListOf<Coordinate2D>()
+//        for (i in 0 until bmkPolygon.pointCount) {
+//            val latLng = bmkPolygon.getPoint(i)
+//            points.add(Coordinate2D(latLng.latitude, latLng.longitude))
+//        }
+//        return Polygon(points, points.size)
+//    }
+//
+//    fun toBMKPolygon(): BMKPolygon {
+//        val points = coordinates.map { it.toBMKCoordinate() }.toTypedArray()
+//        return BMKPolygon(points)
+//    }
+//
+//    fun toBMKPolygonOptions(): BMKPolygonOptions {
+//        val options = BMKPolygonOptions()
+//        coordinates.forEach { coord ->
+//            options.addPoint(coord.toBMKCoordinate())
+//        }
+//        return options
+//    }
+}
+
+open class Circle : Record {
+    @Field
+    var center: Coordinate2D = Coordinate2D()
+
+    @Field
+    var radius: Double = 0.0
+
+    @Field
+    var fillColor: Int? = null
+
+    @Field
+    var strokeColor: Int? = null
+
+    @Field
+    var lineWidth: Float? = null
+
+    constructor() : this(Coordinate2D(), 0.0, null, null, null)
+
+    constructor(
+        center: Coordinate2D = Coordinate2D(),
+        radius: Double = 0.0,
+        fillColor: Int? = null,
+        strokeColor: Int? = null,
+        lineWidth: Float? = null
+    ) {
+        this.center = center
+        this.radius = radius
+        this.fillColor = fillColor
+        this.strokeColor = strokeColor
+        this.lineWidth = lineWidth
+    }
+
+//    fun fromBMKCircle(bmkCircle: BMKCircle): Circle {
+//        return Circle(
+//            center = Coordinate2D(bmkCircle.center.latitude, bmkCircle.center.longitude),
+//            radius = bmkCircle.radius,
+//            fillColor = bmkCircle.fillColor,
+//            strokeColor = bmkCircle.strokeColor,
+//            lineWidth = bmkCircle.lineWidth
+//        )
+//    }
+//
+//    fun toBMKCircle(): BMKCircle {
+//        val circle = BMKCircle(
+//            center.toBMKCoordinate(),
+//            radius
+//        )
+//
+//        fillColor?.let { circle.fillColor = it }
+//        strokeColor?.let { circle.strokeColor = it }
+//        lineWidth?.let { circle.lineWidth = it }
+//
+//        return circle
+//    }
+
+//    fun toBMKCircleOptions(): BMKCircleOptions {
+//        val options = BMKCircleOptions()
+//            .center(center.toBMKCoordinate())
+//            .radius(radius)
+//
+//        fillColor?.let { options.fillColor(it) }
+//        strokeColor?.let { options.strokeColor(it) }
+//        lineWidth?.let { options.lineWidth(it) }
+//
+//        return options
+//    }
+}
+
+class TextMarker: Record {
+
+    @Field
+    var center: Coordinate2D = Coordinate2D()
+
+    @Field
+    var text: String? = null
+}
+
+open class Bounds : Record {
+    @Field
+    var northEast: Coordinate2D = Coordinate2D()
+
+    @Field
+    var southWest: Coordinate2D = Coordinate2D()
+
+    constructor() : this(Coordinate2D(), Coordinate2D())
+
+    constructor(northEast: Coordinate2D = Coordinate2D(), southWest: Coordinate2D = Coordinate2D()) {
+        this.northEast = northEast
+        this.southWest = southWest
+    }
+
+//    fun toBMKBounds(): BMKBounds {
+//        return BMKBounds(
+//            northEast.toBMKCoordinate(),
+//            southWest.toBMKCoordinate()
+//        )
+//    }
+}
+
+// 扩展函数可以单独放一个文件
+//fun LatLng.toCoordinate2D(): Coordinate2D {
+//    return Coordinate2D(this.latitude, this.longitude)
+//}
+//
+//fun BMKCoordinate.toCoordinate2D(): Coordinate2D {
+//    return Coordinate2D(this.latitude, this.longitude)
+//}
+//
+//fun CLLocationCoordinate2D.toCoordinate2D(): Coordinate2D {
+//    return Coordinate2D(this.latitude, this.longitude)
+//}
