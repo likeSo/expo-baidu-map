@@ -23,6 +23,10 @@ class ExpoBaiduMapModule : Module() {
 
         Events("onChange")
 
+        OnCreate {
+//            SDKInitializer.initialize(appContext.reactContext?.applicationContext)
+        }
+
         AsyncFunction("agreePrivacy") { agree: Boolean ->
             SDKInitializer.setAgreePrivacy(appContext.reactContext, agree)
         }
@@ -42,9 +46,9 @@ class ExpoBaiduMapModule : Module() {
             )
             val apiKey = applicationInfo?.metaData?.getString("BaiduMapApiKey")
             if (apiKey != null && apiKey.isNotBlank()) {
-                SDKInitializer.initialize(appContext.reactContext)
+                SDKInitializer.initialize(appContext.reactContext?.applicationContext)
                 SDKInitializer.setApiKey(apiKey)
-
+                return@AsyncFunction 1
             } else {
                 throw CodedException(
                     "ERR_NO_API_KEY_PROVIDED",

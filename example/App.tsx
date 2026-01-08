@@ -1,29 +1,34 @@
-import { useEvent } from 'expo';
-import ExpoBaiduMap, { BaiduMapView } from 'expo-baidu-map';
-import { Button, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { useEvent } from "expo";
+import ExpoBaiduMap, { BaiduMapView } from "expo-baidu-map";
+import { useEffect, useState } from "react";
+import { Button, SafeAreaView, ScrollView, Text, View } from "react-native";
 
 export default function App() {
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    ExpoBaiduMap.startEngine().then(() => {
+      setInitialized(true);
+    });
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.container}>
         <Text style={styles.header}>Module API Example</Text>
         <Group name="Functions">
-          <Button title='初始化引擎' onPress={() => ExpoBaiduMap.startEngine()} />
+          <Button title="" />
         </Group>
         <Group name="Async functions">
           <Button
             title="Set value"
             onPress={async () => {
-              await ExpoBaiduMap.setValueAsync('Hello from JS!');
+              await ExpoBaiduMap.setValueAsync("Hello from JS!");
             }}
           />
         </Group>
         <Group name="Views">
-          <BaiduMapView
-            active={true}
-            style={styles.view}
-          />
+          {initialized && <BaiduMapView active={true} style={styles.view} />}
         </Group>
       </ScrollView>
     </SafeAreaView>
@@ -50,13 +55,13 @@ const styles = {
   },
   group: {
     margin: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
   },
   container: {
     flex: 1,
-    backgroundColor: '#eee',
+    backgroundColor: "#eee",
   },
   view: {
     flex: 1,

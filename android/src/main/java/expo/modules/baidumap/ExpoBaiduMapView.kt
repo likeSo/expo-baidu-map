@@ -16,7 +16,7 @@ class ExpoBaiduMapView(context: Context, appContext: AppContext) : ExpoView(cont
 
   var textMarkers: Array<TextMarker>? = null
 
-  internal val mapView = MapView(context).apply {
+  internal val mapView = MapView(context.applicationContext).apply {
     layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
   }
