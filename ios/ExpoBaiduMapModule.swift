@@ -10,7 +10,7 @@ public class ExpoBaiduMapModule: Module {
     // Defines event names that the module can send to JavaScript.
     Events("onChange")
 
-      AsyncFunction("agreePolicy") { (isAgree: Bool) in
+      AsyncFunction("agreePrivacy") { (isAgree: Bool) in
           BMKMapManager.setAgreePrivacy(isAgree)
       }
 

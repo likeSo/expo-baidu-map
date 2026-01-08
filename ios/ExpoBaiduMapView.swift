@@ -98,4 +98,11 @@ class MapViewDelegate: NSObject, BMKMapViewDelegate {
         }
         return overlayView
     }
+    
+    func mapView(_ mapView: BMKMapView, onClickedBMKOverlayView overlayView: BMKOverlayView) {
+//        switch overlayView {
+//        case is BMKTextView:
+//        default: break
+//        }
+    }
 }

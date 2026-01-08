@@ -23,7 +23,7 @@ class ExpoBaiduMapModule : Module() {
 
         Events("onChange")
 
-        AsyncFunction("agreePolicy") { agree: Boolean ->
+        AsyncFunction("agreePrivacy") { agree: Boolean ->
             SDKInitializer.setAgreePrivacy(appContext.reactContext, agree)
         }
 
@@ -131,6 +131,8 @@ class ExpoBaiduMapModule : Module() {
 
             Prop("textMarkers") { view: ExpoBaiduMapView, textMarkers: Array<TextMarker> ->
 //                view.polygons = polygons
+                view.textMarkers = textMarkers
+                view.reloadOverlays()
             }
 
 

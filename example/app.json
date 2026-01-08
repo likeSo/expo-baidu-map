@@ -29,7 +29,13 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "../app.plugin.js"
+      [
+        "../app.plugin.js",
+        {
+          "iosApiKey": "YOUR_IOS_KEY",
+          "androidApiKey": "YOUR_ANDROID_KEY"
+        }
+      ]
     ]
   }
 }

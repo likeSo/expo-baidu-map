@@ -1,19 +1,15 @@
 import { useEvent } from 'expo';
-import ExpoBaiduMap, { ExpoBaiduMapView } from 'expo-baidu-map';
+import ExpoBaiduMap, { BaiduMapView } from 'expo-baidu-map';
 import { Button, SafeAreaView, ScrollView, Text, View } from 'react-native';
 
 export default function App() {
-  const onChangePayload = useEvent(ExpoBaiduMap, 'onChange');
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.container}>
         <Text style={styles.header}>Module API Example</Text>
-        <Group name="Constants">
-          <Text>{ExpoBaiduMap.PI}</Text>
-        </Group>
         <Group name="Functions">
-          <Text>{ExpoBaiduMap.hello()}</Text>
+          <Button title='初始化引擎' onPress={() => ExpoBaiduMap.startEngine()} />
         </Group>
         <Group name="Async functions">
           <Button
@@ -23,13 +19,9 @@ export default function App() {
             }}
           />
         </Group>
-        <Group name="Events">
-          <Text>{onChangePayload?.value}</Text>
-        </Group>
         <Group name="Views">
-          <ExpoBaiduMapView
-            url="https://www.example.com"
-            onLoad={({ nativeEvent: { url } }) => console.log(`Loaded: ${url}`)}
+          <BaiduMapView
+            active={true}
             style={styles.view}
           />
         </Group>

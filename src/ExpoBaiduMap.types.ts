@@ -1,4 +1,4 @@
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
 
 export type OnLoadEventPayload = {
   url: string;
@@ -12,14 +12,27 @@ export type ChangeEventPayload = {
   value: string;
 };
 
+export type MapType = 'standard' | 'satellite' | 'none'
+
+export type UserTrackingMode = 'heading' | 'follow' | 'followWithHeading';
+
 export type ExpoBaiduMapViewProps = {
-  url: string;
-  onLoad: (event: { nativeEvent: OnLoadEventPayload }) => void;
   style?: StyleProp<ViewStyle>;
+  active: boolean;
+  mapType?: MapType;
+  language?: 'english' | 'chinese';
+  backgroundColor?: ColorValue;
+  backgroundImage?: string;
+  region?: CoordinateRegion;
+  // limitMapRegion
+  compassPosition?: Point;
+  centerCoordinate?: Coordinate2D;
+  showsUserLocation?: boolean;
+  inDoorMapEnabled?: boolean;
+  userTrackingMode?: UserTrackingMode;
+  textMarkers?: TextMarker[];
 };
 
-
-export type MapType = 'normal' | 'satellite' | 'standard';
 
 export type Coordinate2D = {
   latitude: number;
@@ -84,4 +97,23 @@ export type Circle = {
    * 圆的边框宽度。
    */
   strokeWidth: number;
+}
+
+export type TextMarker = {
+  /**
+   * 文本标记的坐标点。
+   */
+  position: Coordinate2D;
+  /**
+   * 文本标记的文本内容。
+   */
+  text: string;
+  /**
+   * 文本标记的文本颜色。
+   */
+  textColor: string;
+  /**
+   * 文本标记的文本大小。
+   */
+  textSize: number;
 }
