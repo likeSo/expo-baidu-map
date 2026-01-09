@@ -120,4 +120,13 @@ final class TextMarker: Record {
     
     @Field
     var text: String?
+    
+    @Field
+    var textColor: UIColor?
+    
+    @Field
+    var textSize: CGFloat?
+    
+    @Field
+    var backgroundColor: UIColor?
 }

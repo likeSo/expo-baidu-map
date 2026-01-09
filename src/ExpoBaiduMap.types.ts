@@ -16,6 +16,8 @@ export type MapType = 'standard' | 'satellite' | 'none'
 
 export type UserTrackingMode = 'heading' | 'follow' | 'followWithHeading';
 
+export type CoordinateType = 'gps' | 'common' | 'bd09ll';
+
 export type ExpoBaiduMapViewProps = {
   style?: StyleProp<ViewStyle>;
   active: boolean;
@@ -31,6 +33,7 @@ export type ExpoBaiduMapViewProps = {
   inDoorMapEnabled?: boolean;
   userTrackingMode?: UserTrackingMode;
   textMarkers?: TextMarker[];
+  
 };
 
 
@@ -103,11 +106,15 @@ export type TextMarker = {
   /**
    * 文本标记的坐标点。
    */
-  position: Coordinate2D;
+  center: Coordinate2D;
   /**
    * 文本标记的文本内容。
    */
   text: string;
+  /**
+   * 文本标记的背景颜色。
+   */
+  backgroundColor: string;
   /**
    * 文本标记的文本颜色。
    */
@@ -116,4 +123,7 @@ export type TextMarker = {
    * 文本标记的文本大小。
    */
   textSize: number;
+
+  // 其他自定义属性，可以增加id参数，用来区分大头针
+  [key: string]: any;
 }

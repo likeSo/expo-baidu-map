@@ -13,13 +13,15 @@ class ExpoBaiduMapView: ExpoView {
     var textMarkers: [TextMarker]?
     
     
-    let onLoad = EventDispatcher()
+    let onTextMarkerOpressed = EventDispatcher()
     var delegate: MapViewDelegate?
     
     required init(appContext: AppContext? = nil) {
         super.init(appContext: appContext)
         clipsToBounds = true
-        delegate = MapViewDelegate()
+        delegate = MapViewDelegate(onTextMarkerOpressed: { [weak self] marker in
+            self?.onTextMarkerOpressed(marker)
+        })
         
         addSubview(mapView)
     }
@@ -61,6 +63,7 @@ class ExpoBaiduMapView: ExpoView {
         
         textMarkers?.forEach { marker in
             if let textMarker = BMKText(center: marker.center.toCLCoordinate(), text: marker.text ?? "") {
+                textMarker.textData = marker
                 overlays.append(textMarker)
             }
         }
@@ -72,6 +75,12 @@ class ExpoBaiduMapView: ExpoView {
 }
 
 class MapViewDelegate: NSObject, BMKMapViewDelegate {
+    let onTextMarkerOpressed: ((_ marker: TextMarker) -> Void)?
+    
+    init(onTextMarkerOpressed: ((_: TextMarker) -> Void)?) {
+        self.onTextMarkerOpressed = onTextMarkerOpressed
+    }
+    
     
     func mapView(_ mapView: BMKMapView, viewFor overlay: any BMKOverlay) -> BMKOverlayView? {
         var overlayView = mapView.view(for: overlay)
@@ -94,15 +103,27 @@ class MapViewDelegate: NSObject, BMKMapViewDelegate {
             if overlayView == nil {
                 overlayView = BMKTextView(textOverlay: text)
             }
+            if let textConfig = text.textData, let textView = overlayView as? BMKTextView {
+                if textConfig.textSize != nil {
+                    textView.fontSize = Int32(textConfig.textSize!)
+                }
+                if textConfig.textColor != nil {
+                    textView.textColor = textConfig.textColor!
+                }
+                if textConfig.backgroundColor != nil {
+                    textView.backgroundColor = textConfig.backgroundColor!
+                }
+            }
             
         }
         return overlayView
     }
     
     func mapView(_ mapView: BMKMapView, onClickedBMKOverlayView overlayView: BMKOverlayView) {
-//        switch overlayView {
-//        case is BMKTextView:
-//        default: break
-//        }
+        if let textOverlay = overlayView as? BMKTextView {
+            if let textMarker = textOverlay.text.textData {
+                onTextMarkerOpressed?(textMarker)
+            }
+        }
     }
 }

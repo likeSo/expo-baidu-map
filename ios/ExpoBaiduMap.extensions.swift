@@ -21,3 +21,8 @@ extension BMKCircle {
         }
     }
 }
+
+
+extension BMKText {
+    var textData: TextMarker?
+}
