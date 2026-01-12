@@ -32,6 +32,13 @@ open class Coordinate2D : Record {
     fun toLatLng(): LatLng {
         return LatLng(latitude, longitude)
     }
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "latitude" to latitude,
+            "longitude" to longitude
+        )
+    }
 }
 
 open class CoordinateSpan : Record {
@@ -261,12 +268,292 @@ open class Bounds : Record {
         this.southWest = southWest
     }
 
+    fun toLatLngBounds(): LatLngBounds {
+        return LatLngBounds.Builder()
+            .include(southWest.toLatLng())
+            .include(northEast.toLatLng())
+            .build()
+    }
+
 //    fun toBMKBounds(): BMKBounds {
 //        return BMKBounds(
 //            northEast.toBMKCoordinate(),
 //            southWest.toBMKCoordinate()
 //        )
 //    }
+}
+
+open class PoiCitySearchOptions : Record {
+    @Field
+    var city: String = ""
+
+    @Field
+    var keyword: String = ""
+
+    @Field
+    var pageIndex: Int? = null
+
+    @Field
+    var pageSize: Int? = null
+
+    @Field
+    var scope: String? = null
+
+    @Field
+    var tag: String? = null
+
+    @Field
+    var cityLimit: Boolean? = null
+
+    @Field
+    var returnAddress: Boolean? = null
+}
+
+open class PoiNearbySearchOptions : Record {
+    @Field
+    var keyword: String = ""
+
+    @Field
+    var location: Coordinate2D = Coordinate2D()
+
+    @Field
+    var radius: Int? = null
+
+    @Field
+    var pageIndex: Int? = null
+
+    @Field
+    var pageSize: Int? = null
+
+    @Field
+    var scope: String? = null
+
+    @Field
+    var tag: String? = null
+
+    @Field
+    var radiusLimit: Boolean? = null
+
+    @Field
+    var returnAddress: Boolean? = null
+}
+
+open class PoiBoundsSearchOptions : Record {
+    @Field
+    var keyword: String = ""
+
+    @Field
+    var bounds: Bounds = Bounds()
+
+    @Field
+    var pageIndex: Int? = null
+
+    @Field
+    var pageSize: Int? = null
+
+    @Field
+    var scope: String? = null
+
+    @Field
+    var tag: String? = null
+
+    @Field
+    var returnAddress: Boolean? = null
+}
+
+open class PoiDetailSearchOptions : Record {
+    @Field
+    var uid: String = ""
+}
+
+open class PoiSuggestionOptions : Record {
+    @Field
+    var keyword: String = ""
+
+    @Field
+    var city: String? = null
+
+    @Field
+    var cityLimit: Boolean? = null
+
+    @Field
+    var location: Coordinate2D? = null
+
+    @Field
+    var hotWord: Boolean? = null
+}
+
+open class PoiSearchPagination : Record {
+    @Field
+    var pageIndex: Int = 0
+
+    @Field
+    var pageSize: Int = 0
+
+    @Field
+    var totalCount: Int = 0
+
+    @Field
+    var totalPage: Int = 0
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "pageIndex" to pageIndex,
+            "pageSize" to pageSize,
+            "totalCount" to totalCount,
+            "totalPage" to totalPage
+        )
+    }
+}
+
+open class PoiInfoRecord : Record {
+    @Field
+    var uid: String = ""
+
+    @Field
+    var name: String = ""
+
+    @Field
+    var location: Coordinate2D? = null
+
+    @Field
+    var address: String? = null
+
+    @Field
+    var province: String? = null
+
+    @Field
+    var city: String? = null
+
+    @Field
+    var area: String? = null
+
+    @Field
+    var phone: String? = null
+
+    @Field
+    var tag: String? = null
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "uid" to uid,
+            "name" to name,
+            "location" to location?.toMap(),
+            "address" to address,
+            "province" to province,
+            "city" to city,
+            "area" to area,
+            "phone" to phone,
+            "tag" to tag
+        )
+    }
+}
+
+open class PoiSearchResultRecord : Record {
+    @Field
+    var pagination: PoiSearchPagination = PoiSearchPagination()
+
+    @Field
+    var pois: List<PoiInfoRecord> = emptyList()
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "pagination" to pagination.toMap(),
+            "pois" to pois.map { it.toMap() }
+        )
+    }
+}
+
+open class PoiDetailInfoRecord : Record {
+    @Field
+    var uid: String = ""
+
+    @Field
+    var name: String = ""
+
+    @Field
+    var location: Coordinate2D? = null
+
+    @Field
+    var address: String? = null
+
+    @Field
+    var province: String? = null
+
+    @Field
+    var city: String? = null
+
+    @Field
+    var area: String? = null
+
+    @Field
+    var phone: String? = null
+
+    @Field
+    var tag: String? = null
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "uid" to uid,
+            "name" to name,
+            "location" to location?.toMap(),
+            "address" to address,
+            "province" to province,
+            "city" to city,
+            "area" to area,
+            "phone" to phone,
+            "tag" to tag
+        )
+    }
+}
+
+open class PoiDetailResultRecord : Record {
+    @Field
+    var poiList: List<PoiDetailInfoRecord>? = null
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "poiList" to poiList?.map { it.toMap() }
+        )
+    }
+}
+
+open class PoiSuggestionRecord : Record {
+    @Field
+    var uid: String? = null
+
+    @Field
+    var key: String? = null
+
+    @Field
+    var city: String? = null
+
+    @Field
+    var district: String? = null
+
+    @Field
+    var location: Coordinate2D? = null
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "uid" to uid,
+            "key" to key,
+            "city" to city,
+            "district" to district,
+            "location" to location?.toMap()
+        )
+    }
+}
+
+open class PoiSuggestionResultRecord : Record {
+    @Field
+    var suggestions: List<PoiSuggestionRecord> = emptyList()
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "suggestions" to suggestions.map { it.toMap() }
+        )
+    }
 }
 
 // 扩展函数可以单独放一个文件
