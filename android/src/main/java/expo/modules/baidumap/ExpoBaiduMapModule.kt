@@ -26,6 +26,12 @@ import com.baidu.mapapi.search.sug.OnGetSuggestionResultListener
 import com.baidu.mapapi.search.sug.SuggestionResult
 import com.baidu.mapapi.search.sug.SuggestionSearch
 import com.baidu.mapapi.search.sug.SuggestionSearchOption
+import com.baidu.mapapi.search.geocode.GeoCodeResult
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult
+import com.baidu.mapapi.search.geocode.GeoCoder
+import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeOption
+import com.baidu.mapapi.search.geocode.GeoCodeOption
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.exception.CodedException
 import expo.modules.kotlin.modules.Module
@@ -38,14 +44,26 @@ class ExpoBaiduMapModule : Module() {
         Name("ExpoBaiduMap")
 
         // Defines event names that the module can send to JavaScript.
-        Events("onGetPoiCitySearchResult", "onGetPoiNearbySearchResult", "onGetPoiBoundsSearchResult", "onGetPoiDetailSearchResult", "onGetSuggestionResult")
+        Events(
+            "onGetPoiCitySearchResult",
+            "onGetPoiNearbySearchResult",
+            "onGetPoiBoundsSearchResult",
+            "onGetPoiDetailSearchResult",
+            "onGetSuggestionResult",
+            "onGetGeoCodeResult",
+            "onGetReGeoCodeResult"
+        )
 
         OnCreate {
             // No initialization here, resources will be created when needed
         }
 
         AsyncFunction("agreePrivacy") { agree: Boolean ->
-            SDKInitializer.setAgreePrivacy(appContext.reactContext, agree)
+            try {
+                SDKInitializer.setAgreePrivacy(appContext.reactContext?.applicationContext, agree)
+            } catch (e: Exception) {
+                throw CodedException("ERR_AGREE_PRIVACY", "Cannot agree privacy ${e.toString()}", e)
+            }
         }
 
         AsyncFunction("setCoordinateType") { type: String ->
@@ -61,15 +79,22 @@ class ExpoBaiduMapModule : Module() {
                 appContext.reactContext?.packageName.toString(),
                 PackageManager.GET_META_DATA
             )
-            val apiKey = applicationInfo?.metaData?.getString("BaiduMapApiKey")
+            val apiKey = applicationInfo?.metaData?.getString("com.baidu.android.lbs.API_KEY")
             if (apiKey != null && apiKey.isNotBlank()) {
-                SDKInitializer.initialize(appContext.reactContext?.applicationContext)
-                SDKInitializer.setApiKey(apiKey)
+                try {
+                    SDKInitializer.initialize(appContext.reactContext?.applicationContext)
+                } catch (e: Exception) {
+                    throw CodedException(
+                        "ERR_INIT_FAILED",
+                        "Init baidu map engine failed. ${e.toString()}",
+                        e
+                    )
+                }
                 return@AsyncFunction 1
             } else {
                 throw CodedException(
                     "ERR_NO_API_KEY_PROVIDED",
-                    "Missing `iosApiKey` field in app.json",
+                    "Missing `androidApiKey` field in app.json",
                     null
                 )
             }
@@ -78,12 +103,15 @@ class ExpoBaiduMapModule : Module() {
         AsyncFunction("poiSearchInCity") { options: PoiCitySearchOptions ->
             // Create search instance when needed
             val searcher = PoiSearch.newInstance()
-            
+
             // Set listener
             searcher.setOnGetPoiSearchResultListener(object : OnGetPoiSearchResultListener {
                 override fun onGetPoiResult(result: PoiResult?) {
                     if (result != null && result.error == SearchResult.ERRORNO.NO_ERROR) {
-                        sendEvent("onGetPoiCitySearchResult", result.toPoiSearchResultRecord().toMap())
+                        sendEvent(
+                            "onGetPoiCitySearchResult",
+                            result.toPoiSearchResultRecord().toMap()
+                        )
                     } else {
                         val errorCode = result?.error?.ordinal ?: -1
                         sendEvent("onGetPoiCitySearchResult", mapOf("errorCode" to errorCode))
@@ -103,7 +131,7 @@ class ExpoBaiduMapModule : Module() {
                     // Not used
                 }
             })
-            
+
             // Build search option
             val option = PoiCitySearchOption()
                 .city(options.city)
@@ -113,13 +141,13 @@ class ExpoBaiduMapModule : Module() {
                 .scope(if (options.scope == "detail") 2 else 1)
                 .cityLimit(options.cityLimit ?: false)
             options.tag?.let { option.tag(it) }
-            
+
             // Execute search and get result
             val result = searcher.searchInCity(option)
-            
+
             // Destroy searcher to free resources
             searcher.destroy()
-            
+
             // Return result status
             return@AsyncFunction result
         }
@@ -127,12 +155,15 @@ class ExpoBaiduMapModule : Module() {
         AsyncFunction("poiSearchNearby") { options: PoiNearbySearchOptions ->
             // Create search instance when needed
             val searcher = PoiSearch.newInstance()
-            
+
             // Set listener
             searcher.setOnGetPoiSearchResultListener(object : OnGetPoiSearchResultListener {
                 override fun onGetPoiResult(result: PoiResult?) {
                     if (result != null && result.error == SearchResult.ERRORNO.NO_ERROR) {
-                        sendEvent("onGetPoiNearbySearchResult", result.toPoiSearchResultRecord().toMap())
+                        sendEvent(
+                            "onGetPoiNearbySearchResult",
+                            result.toPoiSearchResultRecord().toMap()
+                        )
                     } else {
                         val errorCode = result?.error?.ordinal ?: -1
                         sendEvent("onGetPoiNearbySearchResult", mapOf("errorCode" to errorCode))
@@ -152,7 +183,7 @@ class ExpoBaiduMapModule : Module() {
                     // Not used
                 }
             })
-            
+
             // Build search option
             val option = PoiNearbySearchOption()
                 .keyword(options.keyword)
@@ -163,13 +194,13 @@ class ExpoBaiduMapModule : Module() {
                 .pageCapacity(options.pageSize ?: 10)
                 .scope(if (options.scope == "detail") 2 else 1)
             options.tag?.let { option.tag(it) }
-            
+
             // Execute search and get result
             val result = searcher.searchNearby(option)
-            
+
             // Destroy searcher to free resources
             searcher.destroy()
-            
+
             // Return result status
             return@AsyncFunction result
         }
@@ -177,12 +208,15 @@ class ExpoBaiduMapModule : Module() {
         AsyncFunction("poiSearchInBounds") { options: PoiBoundsSearchOptions ->
             // Create search instance when needed
             val searcher = PoiSearch.newInstance()
-            
+
             // Set listener
             searcher.setOnGetPoiSearchResultListener(object : OnGetPoiSearchResultListener {
                 override fun onGetPoiResult(result: PoiResult?) {
                     if (result != null && result.error == SearchResult.ERRORNO.NO_ERROR) {
-                        sendEvent("onGetPoiBoundsSearchResult", result.toPoiSearchResultRecord().toMap())
+                        sendEvent(
+                            "onGetPoiBoundsSearchResult",
+                            result.toPoiSearchResultRecord().toMap()
+                        )
                     } else {
                         val errorCode = result?.error?.ordinal ?: -1
                         sendEvent("onGetPoiBoundsSearchResult", mapOf("errorCode" to errorCode))
@@ -202,7 +236,7 @@ class ExpoBaiduMapModule : Module() {
                     // Not used
                 }
             })
-            
+
             // Build search option
             val option = PoiBoundSearchOption()
                 .keyword(options.keyword)
@@ -211,13 +245,13 @@ class ExpoBaiduMapModule : Module() {
                 .pageCapacity(options.pageSize ?: 10)
                 .scope(if (options.scope == "detail") 2 else 1)
             options.tag?.let { option.tag(it) }
-            
+
             // Execute search and get result
             val result = searcher.searchInBound(option)
-            
+
             // Destroy searcher to free resources
             searcher.destroy()
-            
+
             // Return result status
             return@AsyncFunction result
         }
@@ -225,7 +259,7 @@ class ExpoBaiduMapModule : Module() {
         AsyncFunction("poiSearchDetail") { options: PoiDetailSearchOptions ->
             // Create search instance when needed
             val searcher = PoiSearch.newInstance()
-            
+
             // Set listener
             searcher.setOnGetPoiSearchResultListener(object : OnGetPoiSearchResultListener {
                 override fun onGetPoiResult(result: PoiResult?) {
@@ -234,8 +268,10 @@ class ExpoBaiduMapModule : Module() {
 
                 override fun onGetPoiDetailResult(result: PoiDetailSearchResult?) {
                     if (result != null && result.error == SearchResult.ERRORNO.NO_ERROR) {
-                        val detailRecords = result.poiDetailInfoList?.map { it.toPoiDetailInfoRecord() }
-                        val poiDetailResult = PoiDetailResultRecord().apply { poiList = detailRecords }
+                        val detailRecords =
+                            result.poiDetailInfoList?.map { it.toPoiDetailInfoRecord() }
+                        val poiDetailResult =
+                            PoiDetailResultRecord().apply { poiList = detailRecords }
                         sendEvent("onGetPoiDetailSearchResult", poiDetailResult.toMap())
                     } else {
                         val errorCode = result?.error?.ordinal ?: -1
@@ -252,16 +288,16 @@ class ExpoBaiduMapModule : Module() {
                     // Not used
                 }
             })
-            
+
             // Build search option
             val option = PoiDetailSearchOption().poiUid(options.uid)
-            
+
             // Execute search and get result
             val result = searcher.searchPoiDetail(option)
-            
+
             // Destroy searcher to free resources
             searcher.destroy()
-            
+
             // Return result status
             return@AsyncFunction result
         }
@@ -269,32 +305,153 @@ class ExpoBaiduMapModule : Module() {
         AsyncFunction("poiSuggestion") { options: PoiSuggestionOptions ->
             // Create search instance when needed
             val searcher = SuggestionSearch.newInstance()
-            
+
             // Set listener
             searcher.setOnGetSuggestionResultListener(object : OnGetSuggestionResultListener {
                 override fun onGetSuggestionResult(result: SuggestionResult?) {
                     if (result != null && result.error == SearchResult.ERRORNO.NO_ERROR) {
-                        sendEvent("onGetSuggestionResult", result.toPoiSuggestionResultRecord().toMap())
+                        sendEvent(
+                            "onGetSuggestionResult",
+                            result.toPoiSuggestionResultRecord().toMap()
+                        )
                     } else {
                         val errorCode = result?.error?.ordinal ?: -1
                         sendEvent("onGetSuggestionResult", mapOf("errorCode" to errorCode))
                     }
                 }
             })
-            
+
             // Build search option
             val option = SuggestionSearchOption()
                 .keyword(options.keyword)
             options.city?.let { option.city(it) }
             options.cityLimit?.let { option.citylimit(it) }
             options.location?.let { option.location(it.toLatLng()) }
-            
+
             // Execute search and get result
             val result = searcher.requestSuggestion(option)
-            
+
             // Destroy searcher to free resources
             searcher.destroy()
-            
+
+            // Return result status
+            return@AsyncFunction result
+        }
+
+        AsyncFunction("geoCode") { options: GeoCoderOptions ->
+            // Create geocoder instance
+            val geoCoder = GeoCoder.newInstance()
+
+            // Set listener
+            geoCoder.setOnGetGeoCodeResultListener(object : OnGetGeoCoderResultListener {
+                override fun onGetGeoCodeResult(result: GeoCodeResult?) {
+                    if (result != null && result.error == SearchResult.ERRORNO.NO_ERROR) {
+                        val record = GeoCodeResultRecord().apply {
+                            location =
+                                Coordinate2D(result.location.latitude, result.location.longitude)
+                            precise = result.precise
+                            confidence = result.confidence
+                            level = result.level ?: ""
+                        }
+                        sendEvent("onGetGeoCodeResult", record.toMap())
+                    } else {
+                        val errorCode = result?.error?.ordinal ?: -1
+                        sendEvent("onGetGeoCodeResult", mapOf("errorCode" to errorCode))
+                    }
+                }
+
+                override fun onGetReverseGeoCodeResult(result: ReverseGeoCodeResult?) {
+                    // Not used for this method
+                }
+            })
+
+            // Build geocode option
+            val option = GeoCodeOption()
+                .address(options.address)
+            options.city?.let { option.city(it) }
+
+            // Execute geocode
+            val result = geoCoder.geocode(option)
+
+            // Destroy geocoder to free resources
+            geoCoder.destroy()
+
+            // Return result status
+            return@AsyncFunction result
+        }
+
+        AsyncFunction("reGeoCode") { options: ReGeoCoderOptions ->
+            // Create geocoder instance
+            val geoCoder = GeoCoder.newInstance()
+            // Set listener
+            geoCoder.setOnGetGeoCodeResultListener(object : OnGetGeoCoderResultListener {
+                override fun onGetGeoCodeResult(result: GeoCodeResult?) {
+                    // Not used for this method
+                }
+
+                override fun onGetReverseGeoCodeResult(result: ReverseGeoCodeResult?) {
+                    if (result != null && result.error == SearchResult.ERRORNO.NO_ERROR) {
+                        val addressComponent = result.addressDetail
+                        val componentRecord = ReGeoCodeAddressComponentRecord().apply {
+                            country = addressComponent.countryName ?: ""
+                            countryCode = addressComponent.countryCode.toString()
+                            countryCodeISO = ""
+                            countryCodeISO2 = ""
+                            province = addressComponent.province ?: ""
+                            city = addressComponent.city ?: ""
+                            cityLevel = addressComponent.cityLevel
+                            district = addressComponent.district ?: ""
+                            town = addressComponent.town ?: ""
+                            townCode = ""
+                            street = addressComponent.street ?: ""
+                            streetNumber = addressComponent.streetNumber ?: ""
+                            direction = ""
+                            distance = ""
+                            adcode = addressComponent.adcode.toString()
+                            adcodeFull = ""
+                            provinceCode = ""
+                            cityCode = addressComponent.cityLevel.toString()
+                            districtCode = ""
+                        }
+
+                        val pois = result.poiList?.map { it.toPoiInfoRecord() } ?: emptyList()
+
+                        val record = ReGeoCodeResultRecord().apply {
+                            formattedAddress = result.formattedPoiAddress ?: ""
+                            this.addressComponent = componentRecord
+                            business = result.businessCircle ?: ""
+                            this.pois = pois
+                            roads = emptyList()
+                            roadIntersections = emptyList()
+                            aois = emptyList()
+                        }
+                        sendEvent("onGetReGeoCodeResult", record.toMap())
+                    } else {
+                        val errorCode = result?.error?.ordinal ?: -1
+                        sendEvent("onGetReGeoCodeResult", mapOf("errorCode" to errorCode))
+                    }
+                }
+            })
+
+            // Build reverse geocode option
+            val option = ReverseGeoCodeOption()
+                .location(options.location.toLatLng())
+            options.radius?.let { option.radius(it) }
+            options.isLatestAdmin?.let { option.newVersion(if (it) 1 else 0) }
+            // Convert tags list to string format (comma-separated)
+            options.tags?.let { tags ->
+                val poiType = tags.joinToString(",")
+                option.poiType(poiType)
+            }
+            options.pageSize?.let { option.pageSize(it) }
+            options.pageNum?.let { option.pageNum(it) }
+
+            // Execute reverse geocode
+            val result = geoCoder.reverseGeoCode(option)
+
+            // Destroy geocoder to free resources
+            geoCoder.destroy()
+
             // Return result status
             return@AsyncFunction result
         }
@@ -312,7 +469,7 @@ class ExpoBaiduMapModule : Module() {
             }
 
             Prop<String>("mapType") { view: ExpoBaiduMapView, mapType: String ->
-                val mapType: Int = when(mapType) {
+                val mapType: Int = when (mapType) {
                     "none" -> BaiduMap.MAP_TYPE_NONE;
                     "standard" -> BaiduMap.MAP_TYPE_NORMAL;
                     "satellite" -> BaiduMap.MAP_TYPE_SATELLITE
@@ -322,7 +479,8 @@ class ExpoBaiduMapModule : Module() {
             }
 
             Prop<String>("language") { view: ExpoBaiduMapView, language: String ->
-                view.mapView.map.mapLanguage = if(language == "english") MapLanguage.ENGLISH else MapLanguage.CHINESE
+                view.mapView.map.mapLanguage =
+                    if (language == "english") MapLanguage.ENGLISH else MapLanguage.CHINESE
             }
 
             Prop("backgroundColor") { view: ExpoBaiduMapView, backgroundColor: Color ->
@@ -359,7 +517,7 @@ class ExpoBaiduMapModule : Module() {
 
             Prop("userTrackingMode") { view: ExpoBaiduMapView, userTrackingMode: String ->
                 val locationMode: MyLocationConfiguration.LocationMode = when (userTrackingMode) {
-                    "follow" ->  MyLocationConfiguration.LocationMode.FOLLOWING;
+                    "follow" -> MyLocationConfiguration.LocationMode.FOLLOWING;
                     "heading" -> MyLocationConfiguration.LocationMode.COMPASS;
                     else -> MyLocationConfiguration.LocationMode.NORMAL;
                 }
@@ -410,7 +568,8 @@ class ExpoBaiduMapModule : Module() {
         return PoiInfoRecord().apply {
             uid = this@toPoiInfoRecord.uid ?: ""
             name = this@toPoiInfoRecord.name ?: ""
-            location = this@toPoiInfoRecord.location?.let { Coordinate2D(it.latitude, it.longitude) }
+            location =
+                this@toPoiInfoRecord.location?.let { Coordinate2D(it.latitude, it.longitude) }
             address = this@toPoiInfoRecord.address
             province = this@toPoiInfoRecord.province
             city = this@toPoiInfoRecord.city
@@ -424,7 +583,8 @@ class ExpoBaiduMapModule : Module() {
         return PoiDetailInfoRecord().apply {
             uid = this@toPoiDetailInfoRecord.uid ?: ""
             name = this@toPoiDetailInfoRecord.name ?: ""
-            location = this@toPoiDetailInfoRecord.location?.let { Coordinate2D(it.latitude, it.longitude) }
+            location =
+                this@toPoiDetailInfoRecord.location?.let { Coordinate2D(it.latitude, it.longitude) }
             address = this@toPoiDetailInfoRecord.address
             province = this@toPoiDetailInfoRecord.province
             city = this@toPoiDetailInfoRecord.city

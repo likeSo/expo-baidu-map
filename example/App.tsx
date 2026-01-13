@@ -7,9 +7,16 @@ export default function App() {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    ExpoBaiduMap.startEngine().then(() => {
-      setInitialized(true);
-    });
+    const init = async () => {
+      try {
+        await ExpoBaiduMap.agreePrivacy(true);
+        await ExpoBaiduMap.startEngine();
+        setInitialized(true);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    init();
   }, []);
 
   return (

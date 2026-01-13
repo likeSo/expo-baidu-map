@@ -4,12 +4,11 @@ import {
   ExpoBaiduMapModuleEvents,
   PoiBoundsSearchOptions,
   PoiCitySearchOptions,
-  PoiDetailResult,
   PoiDetailSearchOptions,
   PoiNearbySearchOptions,
-  PoiSearchResult,
   PoiSuggestionOptions,
-  PoiSuggestionResult,
+  GeoCoderOptions,
+  ReGeoCoderOptions,
 } from "./ExpoBaiduMap.types";
 
 class ExpoBaiduMapModule extends NativeModule<ExpoBaiduMapModuleEvents> {
@@ -23,32 +22,44 @@ class ExpoBaiduMapModule extends NativeModule<ExpoBaiduMapModuleEvents> {
 
   async poiSearchInCity(
     _options: PoiCitySearchOptions
-  ): Promise<PoiSearchResult> {
+  ): Promise<boolean> {
     throw new Error("ExpoBaiduMap POI is not supported on web.");
   }
 
   async poiSearchNearby(
     _options: PoiNearbySearchOptions
-  ): Promise<PoiSearchResult> {
+  ): Promise<boolean> {
     throw new Error("ExpoBaiduMap POI is not supported on web.");
   }
 
   async poiSearchInBounds(
     _options: PoiBoundsSearchOptions
-  ): Promise<PoiSearchResult> {
+  ): Promise<boolean> {
     throw new Error("ExpoBaiduMap POI is not supported on web.");
   }
 
   async poiSearchDetail(
     _options: PoiDetailSearchOptions
-  ): Promise<PoiDetailResult> {
+  ): Promise<boolean> {
     throw new Error("ExpoBaiduMap POI is not supported on web.");
   }
 
   async poiSuggestion(
     _options: PoiSuggestionOptions
-  ): Promise<PoiSuggestionResult> {
+  ): Promise<boolean> {
     throw new Error("ExpoBaiduMap POI is not supported on web.");
+  }
+
+  async geoCode(
+    _options: GeoCoderOptions
+  ): Promise<boolean> {
+    throw new Error("ExpoBaiduMap GeoCoder is not supported on web.");
+  }
+
+  async reGeoCode(
+    _options: ReGeoCoderOptions
+  ): Promise<boolean> {
+    throw new Error("ExpoBaiduMap ReGeoCoder is not supported on web.");
   }
 }
 

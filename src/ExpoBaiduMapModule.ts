@@ -5,24 +5,26 @@ import {
   ExpoBaiduMapModuleEvents,
   PoiBoundsSearchOptions,
   PoiCitySearchOptions,
-  PoiDetailResult,
   PoiDetailSearchOptions,
-  PoiSearchResult,
   PoiNearbySearchOptions,
   PoiSuggestionOptions,
-  PoiSuggestionResult,
+  GeoCoderOptions,
+  ReGeoCoderOptions,
 } from "./ExpoBaiduMap.types";
 
 declare class ExpoBaiduMapModule extends NativeModule<ExpoBaiduMapModuleEvents> {
   startEngine(): Promise<void>;
-  agreePrivacy(): Promise<void>;
+  agreePrivacy(agree: boolean): Promise<void>;
   setCoordinateType(type: CoordinateType): Promise<void>;
 
-  poiSearchInCity(options: PoiCitySearchOptions): Promise<PoiSearchResult>;
-  poiSearchNearby(options: PoiNearbySearchOptions): Promise<PoiSearchResult>;
-  poiSearchInBounds(options: PoiBoundsSearchOptions): Promise<PoiSearchResult>;
-  poiSearchDetail(options: PoiDetailSearchOptions): Promise<PoiDetailResult>;
-  poiSuggestion(options: PoiSuggestionOptions): Promise<PoiSuggestionResult>;
+  poiSearchInCity(options: PoiCitySearchOptions): Promise<boolean>;
+  poiSearchNearby(options: PoiNearbySearchOptions): Promise<boolean>;
+  poiSearchInBounds(options: PoiBoundsSearchOptions): Promise<boolean>;
+  poiSearchDetail(options: PoiDetailSearchOptions): Promise<boolean>;
+  poiSuggestion(options: PoiSuggestionOptions): Promise<boolean>;
+  
+  geoCode(options: GeoCoderOptions): Promise<boolean>;
+  reGeoCode(options: ReGeoCoderOptions): Promise<boolean>;
 }
 
 // This call loads the native module object from the JSI.

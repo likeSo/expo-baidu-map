@@ -369,3 +369,146 @@ struct PoiSuggestionResultRecord: Record {
     @Field
     var suggestions: [PoiSuggestionRecord] = []
 }
+
+struct GeoCoderOptions: Record {
+    init() { }
+    
+    @Field
+    var address: String = ""
+    
+    @Field
+    var city: String?
+    
+    @Field
+    var output: String?
+    
+    @Field
+    var retCoordType: String?
+}
+
+struct ReGeoCoderOptions: Record {
+    init() { }
+    
+    @Field
+    var location: Coordinate2D = .init()
+    
+    @Field
+    var radius: Int32?
+    
+    @Field
+    var tags: [String]?
+    
+    @Field
+    var extensionsRoad: Bool?
+    
+    @Field
+    var pageSize: Int32?
+    
+    @Field
+    var pageNum: Int32?
+    
+    @Field
+    var isLatestAdmin: Bool?
+}
+
+struct GeoCodeResultRecord: Record {
+    init() { }
+    
+    @Field
+    var location: Coordinate2D = .init()
+    
+    @Field
+    var precise: Int = 0
+    
+    @Field
+    var confidence: Int = 0
+    
+    @Field
+    var level: String = ""
+}
+
+struct ReGeoCodeAddressComponentRecord: Record {
+    init() { }
+    
+    @Field
+    var country: String = ""
+    
+    @Field
+    var countryCode: String = ""
+    
+    @Field
+    var countryCodeISO: String = ""
+    
+    @Field
+    var countryCodeISO2: String = ""
+    
+    @Field
+    var province: String = ""
+    
+    @Field
+    var city: String = ""
+    
+    @Field
+    var cityLevel: Int = 0
+    
+    @Field
+    var district: String = ""
+    
+    @Field
+    var town: String = ""
+    
+    @Field
+    var townCode: String = ""
+    
+    @Field
+    var street: String = ""
+    
+    @Field
+    var streetNumber: String = ""
+    
+    @Field
+    var direction: String = ""
+    
+    @Field
+    var distance: String = ""
+    
+    @Field
+    var adcode: String = ""
+    
+    @Field
+    var adcodeFull: String = ""
+    
+    @Field
+    var provinceCode: String = ""
+    
+    @Field
+    var cityCode: String = ""
+    
+    @Field
+    var districtCode: String = ""
+}
+
+struct ReGeoCodeResultRecord: Record {
+    init() { }
+    
+    @Field
+    var formattedAddress: String = ""
+    
+    @Field
+    var addressComponent: ReGeoCodeAddressComponentRecord = .init()
+    
+    @Field
+    var business: String = ""
+    
+    @Field
+    var pois: [PoiInfoRecord] = []
+    
+    @Field
+    var roads: [Any] = []
+    
+    @Field
+    var roadIntersections: [Any] = []
+    
+    @Field
+    var aois: [Any] = []
+}

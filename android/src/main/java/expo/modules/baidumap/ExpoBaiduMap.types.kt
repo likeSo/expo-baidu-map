@@ -556,6 +556,184 @@ open class PoiSuggestionResultRecord : Record {
     }
 }
 
+open class GeoCoderOptions : Record {
+    @Field
+    var address: String = ""
+    
+    @Field
+    var city: String? = null
+    
+    @Field
+    var output: String? = null
+    
+    @Field
+    var retCoordType: String? = null
+}
+
+open class ReGeoCoderOptions : Record {
+    @Field
+    var location: Coordinate2D = Coordinate2D()
+    
+    @Field
+    var isLatestAdmin: Boolean? = null
+    
+    @Field
+    var radius: Int? = null
+    
+    @Field
+    var tags: List<String>? = null
+    
+    @Field
+    var extensionsRoad: Boolean? = null
+    
+    @Field
+    var pageSize: Int? = null
+    
+    @Field
+    var pageNum: Int? = null
+}
+
+open class GeoCodeResultRecord : Record {
+    @Field
+    var location: Coordinate2D = Coordinate2D()
+    
+    @Field
+    var precise: Int = 0
+    
+    @Field
+    var confidence: Int = 0
+    
+    @Field
+    var level: String = ""
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "location" to location.toMap(),
+            "precise" to precise,
+            "confidence" to confidence,
+            "level" to level
+        )
+    }
+}
+
+open class ReGeoCodeAddressComponentRecord : Record {
+    @Field
+    var country: String = ""
+    
+    @Field
+    var countryCode: String = ""
+    
+    @Field
+    var countryCodeISO: String = ""
+    
+    @Field
+    var countryCodeISO2: String = ""
+    
+    @Field
+    var province: String = ""
+    
+    @Field
+    var city: String = ""
+    
+    @Field
+    var cityLevel: Int = 0
+    
+    @Field
+    var district: String = ""
+    
+    @Field
+    var town: String = ""
+    
+    @Field
+    var townCode: String = ""
+    
+    @Field
+    var street: String = ""
+    
+    @Field
+    var streetNumber: String = ""
+    
+    @Field
+    var direction: String = ""
+    
+    @Field
+    var distance: String = ""
+    
+    @Field
+    var adcode: String = ""
+    
+    @Field
+    var adcodeFull: String = ""
+    
+    @Field
+    var provinceCode: String = ""
+    
+    @Field
+    var cityCode: String = ""
+    
+    @Field
+    var districtCode: String = ""
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "country" to country,
+            "countryCode" to countryCode,
+            "countryCodeISO" to countryCodeISO,
+            "countryCodeISO2" to countryCodeISO2,
+            "province" to province,
+            "city" to city,
+            "cityLevel" to cityLevel,
+            "district" to district,
+            "town" to town,
+            "townCode" to townCode,
+            "street" to street,
+            "streetNumber" to streetNumber,
+            "direction" to direction,
+            "distance" to distance,
+            "adcode" to adcode,
+            "adcodeFull" to adcodeFull,
+            "provinceCode" to provinceCode,
+            "cityCode" to cityCode,
+            "districtCode" to districtCode
+        )
+    }
+}
+
+open class ReGeoCodeResultRecord : Record {
+    @Field
+    var formattedAddress: String = ""
+    
+    @Field
+    var addressComponent: ReGeoCodeAddressComponentRecord = ReGeoCodeAddressComponentRecord()
+    
+    @Field
+    var business: String = ""
+    
+    @Field
+    var pois: List<PoiInfoRecord> = emptyList()
+    
+    @Field
+    var roads: List<Any> = emptyList()
+    
+    @Field
+    var roadIntersections: List<Any> = emptyList()
+    
+    @Field
+    var aois: List<Any> = emptyList()
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "formattedAddress" to formattedAddress,
+            "addressComponent" to addressComponent.toMap(),
+            "business" to business,
+            "pois" to pois.map { it.toMap() },
+            "roads" to roads,
+            "roadIntersections" to roadIntersections,
+            "aois" to aois
+        )
+    }
+}
+
 // 扩展函数可以单独放一个文件
 //fun LatLng.toCoordinate2D(): Coordinate2D {
 //    return Coordinate2D(this.latitude, this.longitude)

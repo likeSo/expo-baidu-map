@@ -24,13 +24,13 @@ const withExpoBaiduMap: ConfigPlugin<{
   });
 
   config = withAndroidManifest(config, (config) => {
-    const mainApplication = AndroidConfig.Manifest.getMainActivityOrThrow(
+    const mainApplication = AndroidConfig.Manifest.getMainApplicationOrThrow(
       config.modResults
     );
     if (props.androidApiKey) {
       AndroidConfig.Manifest.addMetaDataItemToMainApplication(
         mainApplication,
-        "BaiduMapApiKey",
+        "com.baidu.android.lbs.API_KEY",
         props.androidApiKey
       );
     }

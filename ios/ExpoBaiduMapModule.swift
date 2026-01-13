@@ -6,136 +6,166 @@ import BaiduMapAPI_Search
 public class ExpoBaiduMapModule: Module {
     var poiSearchDelegate: PoiSearchDelegate?
     var suggestionSearchDelegate: SuggestionSearchDelegate?
-    var pendingPoiTasks: [String: PoiSearchDelegate] = [:]
+    var geoCoderDelegate: GeoCoderDelegate?
     
-        
-    fileprivate func sendGetPoiSearchResultEvent(_ record: PoiSearchResultRecord, _ errorCode: BMKErrorCode) {
-        
-    }
     
-
-  public func definition() -> ModuleDefinition {
-    Name("ExpoBaiduMap")
-
-    Events("onGetPoiCitySearchResult", "onGetPoiNearbySearchResult", "onGetPoiBoundsSearchResult", "onGetPoiDetailSearchResult", "onGetSuggestionResult")
-
-      AsyncFunction("agreePrivacy") { (isAgree: Bool) in
-          BMKMapManager.setAgreePrivacy(isAgree)
-      }
-
-      AsyncFunction("setCoordinateType") { (type: String) in
-          let coordinateType: BMK_COORD_TYPE
-          switch (type) {
-          case "gps":
-              coordinateType = .COORDTYPE_GPS
-          case "common":
-              coordinateType = .COORDTYPE_COMMON
-          default: coordinateType = .COORDTYPE_BD09LL
-          }
-          return BMKMapManager.setCoordinateTypeUsedInBaiduMapSDK(coordinateType)
-      }
-      
-      AsyncFunction("startEngine") {
-          if let apiKey = Bundle.main.object(forInfoDictionaryKey: "BaiduMapApiKey") as? String {
-              return BMKMapManager().start(apiKey, generalDelegate: nil)
-          }
-          throw Exception(name: "ERR_NO_API_KEY_PROVIDED", description: "Missing `iosApiKey` field in app.json")
-      }
-      
-      AsyncFunction("poiSearchInCity") { (options: PoiCitySearchOptions) in
-          let searcher = BMKPoiSearch()
-          self.poiSearchDelegate = PoiSearchDelegate(onGetSearchResult: { [weak self] record, errorCode in
-              self?.sendEvent("onGetPoiCitySearchResult", makeDictionary(from: record, errorCode: errorCode))
-              self?.poiSearchDelegate = nil
-          }, onGetPoiDetailResult: nil)
-          
-          searcher.delegate = poiSearchDelegate
-          
-          let opt = BMKPOICitySearchOption()
-          opt.city = options.city
-          opt.keyword = options.keyword
-          opt.pageIndex = options.pageIndex ?? 0
-          opt.pageSize = options.pageSize ?? 10
-          opt.scope = options.scope == "basic" ? BMKPOISearchScopeType.BMK_POI_SCOPE_BASIC_INFORMATION : BMKPOISearchScopeType.BMK_POI_SCOPE_DETAIL_INFORMATION
-          opt.isCityLimit = options.cityLimit ?? false
-          
-          return searcher.poiSearch(inCity: opt)
-      }
-      
-      AsyncFunction("poiSearchNearby") { (options: PoiNearbySearchOptions) in
-          let searcher = BMKPoiSearch()
-          self.poiSearchDelegate = PoiSearchDelegate(onGetSearchResult: { [weak self] record, errorCode in
-              self?.sendEvent("onGetPoiNearbySearchResult", makeDictionary(from: record, errorCode: errorCode))
-              self?.poiSearchDelegate = nil
-          }, onGetPoiDetailResult: nil)
-          
-          searcher.delegate = poiSearchDelegate
-          
-          let opt = BMKPOINearbySearchOption()
-          opt.location = options.location.toCLCoordinate()
-          opt.keywords = options.keywords
-          opt.radius = Int(options.radius ?? 1000)
-          opt.pageIndex = Int(options.pageIndex ?? 0)
-          opt.pageSize = Int(options.pageSize ?? 10)
-          opt.scope = options.scope == "basic" ? BMKPOISearchScopeType.BMK_POI_SCOPE_BASIC_INFORMATION : BMKPOISearchScopeType.BMK_POI_SCOPE_DETAIL_INFORMATION
-          opt.isRadiusLimit = options.radiusLimit ?? false
-          opt.tags = options.tags
-          
-          return searcher.poiSearchNear(by: opt)
-      }
-      
-      AsyncFunction("poiSearchInBounds") { (options: PoiBoundsSearchOptions) in
-          let searcher = BMKPoiSearch()
-          self.poiSearchDelegate = PoiSearchDelegate(onGetSearchResult: { [weak self] record, errorCode in
-              self?.sendEvent("onGetPoiBoundsSearchResult", makeDictionary(from: record, errorCode: errorCode))
-              self?.poiSearchDelegate = nil
-          }, onGetPoiDetailResult: nil)
-          searcher.delegate = poiSearchDelegate
-          
-          let opt = BMKPOIBoundSearchOption()
-          opt.leftBottom = options.bounds.southWest.toCLCoordinate()
-          opt.rightTop = options.bounds.northEast.toCLCoordinate()
-          opt.keywords = options.keywords
-          opt.pageIndex = options.pageIndex ?? 0
-          opt.pageSize = options.pageSize ?? 10
-          opt.scope = options.scope == "basic" ? BMKPOISearchScopeType.BMK_POI_SCOPE_BASIC_INFORMATION : BMKPOISearchScopeType.BMK_POI_SCOPE_DETAIL_INFORMATION
-          opt.tags = options.tags
-          
-          return searcher.poiSearchInbounds(opt)
-      }
-      
-      AsyncFunction("poiSearchDetail") { (options: PoiDetailSearchOptions) in
-          let searcher = BMKPoiSearch()
-          self.poiSearchDelegate = PoiSearchDelegate(onGetSearchResult: nil, onGetPoiDetailResult: { [weak self] record, errorCode in
-              self?.sendEvent("onGetPoiDetailSearchResult", makeDictionary(from: record, errorCode: errorCode))
-              self?.poiSearchDelegate = nil
-          })
-          searcher.delegate = poiSearchDelegate
-          
-          let opt = BMKPOIDetailSearchOption()
-          opt.poiUIDs = options.uids
-          
-          return searcher.poiDetailSearch(opt)
-      }
-      
-      AsyncFunction("poiSuggestion") { (options: PoiSuggestionOptions) in
-          let searcher = BMKSuggestionSearch()
-          suggestionSearchDelegate = SuggestionSearchDelegate(onGetSuggestionResult: { [weak self] record, errorCode in
-              self?.sendEvent("onGetSuggestionResult", makeDictionary(from: record, errorCode: errorCode))
-              self?.suggestionSearchDelegate = nil
-          })
-          searcher.delegate = suggestionSearchDelegate
-          
-          let opt = BMKSuggestionSearchOption()
-          opt.keyword = options.keyword
-          opt.cityname = options.city
-          opt.cityLimit = options.cityLimit ?? false
-          if options.location != nil {
-              opt.location = options.location!.toCLCoordinate()
-          }
-          
-          return searcher.suggestionSearch(opt)
-      }
+    public func definition() -> ModuleDefinition {
+        Name("ExpoBaiduMap")
+        
+        Events("onGetPoiCitySearchResult", "onGetPoiNearbySearchResult", "onGetPoiBoundsSearchResult", "onGetPoiDetailSearchResult", "onGetSuggestionResult")
+        
+        AsyncFunction("agreePrivacy") { (isAgree: Bool) in
+            BMKMapManager.setAgreePrivacy(isAgree)
+        }
+        
+        AsyncFunction("setCoordinateType") { (type: String) in
+            let coordinateType: BMK_COORD_TYPE
+            switch (type) {
+            case "gps":
+                coordinateType = .COORDTYPE_GPS
+            case "common":
+                coordinateType = .COORDTYPE_COMMON
+            default: coordinateType = .COORDTYPE_BD09LL
+            }
+            return BMKMapManager.setCoordinateTypeUsedInBaiduMapSDK(coordinateType)
+        }
+        
+        AsyncFunction("startEngine") {
+            if let apiKey = Bundle.main.object(forInfoDictionaryKey: "BaiduMapApiKey") as? String {
+                return BMKMapManager().start(apiKey, generalDelegate: nil)
+            }
+            throw Exception(name: "ERR_NO_API_KEY_PROVIDED", description: "Missing `iosApiKey` field in app.json")
+        }
+        
+        AsyncFunction("poiSearchInCity") { (options: PoiCitySearchOptions) in
+            let searcher = BMKPoiSearch()
+            self.poiSearchDelegate = PoiSearchDelegate(onGetSearchResult: { [weak self] record, errorCode in
+                self?.sendEvent("onGetPoiCitySearchResult", makeDictionary(from: record, errorCode: errorCode))
+                self?.poiSearchDelegate = nil
+            }, onGetPoiDetailResult: nil)
+            
+            searcher.delegate = poiSearchDelegate
+            
+            let opt = BMKPOICitySearchOption()
+            opt.city = options.city
+            opt.keyword = options.keyword
+            opt.pageIndex = options.pageIndex ?? 0
+            opt.pageSize = options.pageSize ?? 10
+            opt.scope = options.scope == "basic" ? BMKPOISearchScopeType.BMK_POI_SCOPE_BASIC_INFORMATION : BMKPOISearchScopeType.BMK_POI_SCOPE_DETAIL_INFORMATION
+            opt.isCityLimit = options.cityLimit ?? false
+            
+            return searcher.poiSearch(inCity: opt)
+        }
+        
+        AsyncFunction("poiSearchNearby") { (options: PoiNearbySearchOptions) in
+            let searcher = BMKPoiSearch()
+            self.poiSearchDelegate = PoiSearchDelegate(onGetSearchResult: { [weak self] record, errorCode in
+                self?.sendEvent("onGetPoiNearbySearchResult", makeDictionary(from: record, errorCode: errorCode))
+                self?.poiSearchDelegate = nil
+            }, onGetPoiDetailResult: nil)
+            
+            searcher.delegate = poiSearchDelegate
+            
+            let opt = BMKPOINearbySearchOption()
+            opt.location = options.location.toCLCoordinate()
+            opt.keywords = options.keywords
+            opt.radius = Int(options.radius ?? 1000)
+            opt.pageIndex = Int(options.pageIndex ?? 0)
+            opt.pageSize = Int(options.pageSize ?? 10)
+            opt.scope = options.scope == "basic" ? BMKPOISearchScopeType.BMK_POI_SCOPE_BASIC_INFORMATION : BMKPOISearchScopeType.BMK_POI_SCOPE_DETAIL_INFORMATION
+            opt.isRadiusLimit = options.radiusLimit ?? false
+            opt.tags = options.tags
+            
+            return searcher.poiSearchNear(by: opt)
+        }
+        
+        AsyncFunction("poiSearchInBounds") { (options: PoiBoundsSearchOptions) in
+            let searcher = BMKPoiSearch()
+            self.poiSearchDelegate = PoiSearchDelegate(onGetSearchResult: { [weak self] record, errorCode in
+                self?.sendEvent("onGetPoiBoundsSearchResult", makeDictionary(from: record, errorCode: errorCode))
+                self?.poiSearchDelegate = nil
+            }, onGetPoiDetailResult: nil)
+            searcher.delegate = poiSearchDelegate
+            
+            let opt = BMKPOIBoundSearchOption()
+            opt.leftBottom = options.bounds.southWest.toCLCoordinate()
+            opt.rightTop = options.bounds.northEast.toCLCoordinate()
+            opt.keywords = options.keywords
+            opt.pageIndex = options.pageIndex ?? 0
+            opt.pageSize = options.pageSize ?? 10
+            opt.scope = options.scope == "basic" ? BMKPOISearchScopeType.BMK_POI_SCOPE_BASIC_INFORMATION : BMKPOISearchScopeType.BMK_POI_SCOPE_DETAIL_INFORMATION
+            opt.tags = options.tags
+            
+            return searcher.poiSearchInbounds(opt)
+        }
+        
+        AsyncFunction("poiSearchDetail") { (options: PoiDetailSearchOptions) in
+            let searcher = BMKPoiSearch()
+            self.poiSearchDelegate = PoiSearchDelegate(onGetSearchResult: nil, onGetPoiDetailResult: { [weak self] record, errorCode in
+                self?.sendEvent("onGetPoiDetailSearchResult", makeDictionary(from: record, errorCode: errorCode))
+                self?.poiSearchDelegate = nil
+            })
+            searcher.delegate = poiSearchDelegate
+            
+            let opt = BMKPOIDetailSearchOption()
+            opt.poiUIDs = options.uids
+            
+            return searcher.poiDetailSearch(opt)
+        }
+        
+        AsyncFunction("poiSuggestion") { (options: PoiSuggestionOptions) in
+            let searcher = BMKSuggestionSearch()
+            suggestionSearchDelegate = SuggestionSearchDelegate(onGetSuggestionResult: { [weak self] record, errorCode in
+                self?.sendEvent("onGetSuggestionResult", makeDictionary(from: record, errorCode: errorCode))
+                self?.suggestionSearchDelegate = nil
+            })
+            searcher.delegate = suggestionSearchDelegate
+            
+            let opt = BMKSuggestionSearchOption()
+            opt.keyword = options.keyword
+            opt.cityname = options.city
+            opt.cityLimit = options.cityLimit ?? false
+            if options.location != nil {
+                opt.location = options.location!.toCLCoordinate()
+            }
+            
+            return searcher.suggestionSearch(opt)
+        }
+        
+        AsyncFunction("geoCode") { (options: GeoCoderOptions) in
+            let searcher = BMKGeoCodeSearch()
+            geoCoderDelegate = GeoCoderDelegate(onGetGeoCodeResult: { [weak self] record, errorCode in
+                self?.sendEvent("onGetGeoCodeResult", makeDictionary(from: record, errorCode: errorCode))
+                self?.geoCoderDelegate = nil
+            }, onGetReGeoCodeResult: nil)
+            searcher.delegate = geoCoderDelegate
+            
+            let opt = BMKGeoCodeSearchOption()
+            opt.address = options.address
+            opt.city = options.city
+            
+            return searcher.geoCode(opt)
+        }
+        
+        AsyncFunction("reGeoCode") { (options: ReGeoCoderOptions) in
+            let searcher = BMKGeoCodeSearch()
+            geoCoderDelegate = GeoCoderDelegate(onGetGeoCodeResult: nil, onGetReGeoCodeResult: { [weak self] record, errorCode in
+                self?.sendEvent("onGetReGeoCodeResult", makeDictionary(from: record, errorCode: errorCode))
+                self?.geoCoderDelegate = nil
+            })
+            searcher.delegate = geoCoderDelegate
+            
+            let opt = BMKReverseGeoCodeSearchOption()
+            opt.location = options.location.toCLCoordinate()
+            opt.radius = options.radius ?? 1000
+            opt.isLatestAdmin = options.isLatestAdmin ?? false
+            opt.tags = options.tags
+            opt.extensionsRoad = options.extensionsRoad ?? false
+            opt.pageSize = options.pageSize ?? 10
+            opt.pageNum = options.pageNum ?? 0
+            
+            return searcher.reverseGeoCode(opt)
+        }
 
     View(ExpoBaiduMapView.self) {
         Events("onLoad")
@@ -348,6 +378,85 @@ final class SuggestionSearchDelegate: NSObject, BMKSuggestionSearchDelegate {
         var record = PoiSuggestionResultRecord()
         record.suggestions = suggestions
         onGetSuggestionResult?(record, nil)
+    }
+}
+
+final class GeoCoderDelegate: NSObject, BMKGeoCodeSearchDelegate {
+    let onGetGeoCodeResult: ((_ onSuccess: GeoCodeResultRecord?, _ onError: BMKSearchErrorCode?) -> Void)?
+    let onGetReGeoCodeResult: ((_ onSuccess: ReGeoCodeResultRecord?, _ onError: BMKSearchErrorCode?) -> Void)?
+    
+    init(onGetGeoCodeResult: ((_ onSuccess: GeoCodeResultRecord?, _ onError: BMKSearchErrorCode?) -> Void)?, onGetReGeoCodeResult: ((_ onSuccess: ReGeoCodeResultRecord?, _ onError: BMKSearchErrorCode?) -> Void)?) {
+        self.onGetGeoCodeResult = onGetGeoCodeResult
+        self.onGetReGeoCodeResult = onGetReGeoCodeResult
+    }
+    
+    func onGetGeoCodeResult(_ searcher: BMKGeoCodeSearch!, result: BMKGeoCodeSearchResult!, errorCode error: BMKSearchErrorCode) {
+        if error != BMK_SEARCH_NO_ERROR {
+            onGetGeoCodeResult?(nil, error)
+            return
+        }
+        
+        var record = GeoCodeResultRecord()
+        record.location = Coordinate2D(latitude: result.location.latitude, longitude: result.location.longitude)
+        record.precise = Int(result.precise)
+        record.confidence = Int(result.confidence)
+        record.level = result.level ?? ""
+        onGetGeoCodeResult?(record, nil)
+    }
+    
+    func onGetReverseGeoCodeResult(_ searcher: BMKGeoCodeSearch!, result: BMKReverseGeoCodeSearchResult!, errorCode error: BMKSearchErrorCode) {
+        if error != BMK_SEARCH_NO_ERROR {
+            onGetReGeoCodeResult?(nil, error)
+            return
+        }
+        
+        var record = ReGeoCodeResultRecord()
+        record.formattedAddress = result.address ?? ""
+        record.business = result.businessCircle ?? ""
+        
+        // 处理地址组件
+        let addressDetail = result.addressDetail
+        var componentRecord = ReGeoCodeAddressComponentRecord()
+        componentRecord.country = addressDetail?.country ?? ""
+        componentRecord.countryCode = ""
+        componentRecord.countryCodeISO = ""
+        componentRecord.countryCodeISO2 = ""
+        componentRecord.province = addressDetail?.province ?? ""
+        componentRecord.city = addressDetail?.city ?? ""
+        componentRecord.cityLevel = 0
+        componentRecord.district = addressDetail?.district ?? ""
+        componentRecord.town = addressDetail?.town ?? ""
+        componentRecord.townCode = ""
+        componentRecord.street = addressDetail?.streetName ?? ""
+        componentRecord.streetNumber = addressDetail?.streetNumber ?? ""
+        componentRecord.direction = ""
+        componentRecord.distance = ""
+        componentRecord.adcode = addressDetail?.adCode ?? ""
+        componentRecord.adcodeFull = ""
+        componentRecord.provinceCode = ""
+        componentRecord.cityCode = ""
+        componentRecord.districtCode = ""
+        
+        record.addressComponent = componentRecord
+        
+        // 处理POI
+        let poiList = result.poiList ?? []
+        let pois: [PoiInfoRecord] = poiList.map { info in
+            var poiRecord = PoiInfoRecord()
+            poiRecord.uid = info.uid ?? ""
+            poiRecord.name = info.name ?? ""
+            poiRecord.location = Coordinate2D(latitude: info.pt.latitude, longitude: info.pt.longitude)
+            poiRecord.address = info.address
+            poiRecord.province = info.province
+            poiRecord.city = info.city
+            poiRecord.area = info.area
+            poiRecord.phone = info.phone
+            poiRecord.tag = info.tag
+            return poiRecord
+        }
+        record.pois = pois
+        
+        onGetReGeoCodeResult?(record, nil)
     }
 }
 

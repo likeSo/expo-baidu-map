@@ -6,6 +6,13 @@ export type OnLoadEventPayload = {
 
 export type ExpoBaiduMapModuleEvents = {
   onChange: (params: ChangeEventPayload) => void;
+  onGetPoiCitySearchResult: (result: PoiSearchResult | { errorCode: number }) => void;
+  onGetPoiNearbySearchResult: (result: PoiSearchResult | { errorCode: number }) => void;
+  onGetPoiBoundsSearchResult: (result: PoiSearchResult | { errorCode: number }) => void;
+  onGetPoiDetailSearchResult: (result: PoiDetailResult | { errorCode: number }) => void;
+  onGetSuggestionResult: (result: PoiSuggestionResult | { errorCode: number }) => void;
+  onGetGeoCodeResult: (result: GeoCodeResult | { errorCode: number }) => void;
+  onGetReGeoCodeResult: (result: ReGeoCodeResult | { errorCode: number }) => void;
 };
 
 export type ChangeEventPayload = {
@@ -228,4 +235,60 @@ export type PoiSuggestion = {
 
 export type PoiSuggestionResult = {
   suggestions: PoiSuggestion[];
+};
+
+export type GeoCoderOptions = {
+  address: string;
+  city?: string;
+  output?: "json" | "xml";
+  retCoordType?: CoordinateType;
+};
+
+export type ReGeoCoderOptions = {
+  location: Coordinate2D;
+  radius?: number;
+  tags?: string[];
+  extensionsRoad?: boolean;
+  pageSize?: number;
+  pageNum?: number;
+  isLatestAdmin?: boolean;
+};
+
+export type GeoCodeResult = {
+  location: Coordinate2D;
+  precise: number;
+  confidence: number;
+  level: string;
+};
+
+export type ReGeoCodeAddressComponent = {
+  country: string;
+  countryCode: string;
+  countryCodeISO: string;
+  countryCodeISO2: string;
+  province: string;
+  city: string;
+  cityLevel: number;
+  district: string;
+  town: string;
+  townCode: string;
+  street: string;
+  streetNumber: string;
+  direction: string;
+  distance: string;
+  adcode: string;
+  adcodeFull: string;
+  provinceCode: string;
+  cityCode: string;
+  districtCode: string;
+};
+
+export type ReGeoCodeResult = {
+  formattedAddress: string;
+  addressComponent: ReGeoCodeAddressComponent;
+  business: string;
+  pois: PoiInfo[];
+  roads: any[];
+  roadIntersections: any[];
+  aois: any[];
 };
