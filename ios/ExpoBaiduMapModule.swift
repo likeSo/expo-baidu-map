@@ -264,6 +264,90 @@ public class ExpoBaiduMapModule: Module {
             view.textMarkers = textMarkers
         }
         
+        // Map style properties
+        Prop("showsScale") { (view: ExpoBaiduMapView, showsScale: Bool) in
+            view.mapView.showMapScaleBar = showsScale
+        }
+        
+        Prop("showsZoomControls") { (view: ExpoBaiduMapView, showsZoomControls: Bool) in
+            // pass
+        }
+        
+        Prop("rotationEnabled") { (view: ExpoBaiduMapView, rotationEnabled: Bool) in
+            view.mapView.isRotateEnabled = rotationEnabled
+        }
+        
+        Prop("doubleClickZoomEnabled") { (view: ExpoBaiduMapView, doubleClickZoomEnabled: Bool) in
+            view.mapView.isZoomEnabledWithTap = doubleClickZoomEnabled
+        }
+        
+        Prop("showsCompass") { (view: ExpoBaiduMapView, showsCompass: Bool) in
+            // pass
+        }
+        
+        Prop("logoPosition") { (view: ExpoBaiduMapView, position: String) in
+            let positionEnum: BMKLogoPosition
+            switch position {
+            case "leftBottom":
+                positionEnum = BMKLogoPositionLeftBottom
+            case "leftTop":
+                positionEnum = BMKLogoPositionLeftTop
+            case "centerBottom":
+                positionEnum = BMKLogoPositionCenterBottom
+            case "centerTop":
+                positionEnum = BMKLogoPositionCenterTop
+            case "rightBottom":
+                positionEnum = BMKLogoPositionRightBottom
+            case "rightTop":
+                positionEnum = BMKLogoPositionRightTop
+            default:
+                positionEnum = BMKLogoPositionLeftBottom
+            }
+            
+            view.mapView.logoPosition = positionEnum
+        }
+        
+        Prop("scrollEnabled") { (view: ExpoBaiduMapView, scrollEnabled: Bool) in
+            view.mapView.isScrollEnabled = scrollEnabled
+        }
+        
+        Prop("zoomEnabled") { (view: ExpoBaiduMapView, zoomEnabled: Bool) in
+            view.mapView.isZoomEnabled = zoomEnabled
+        }
+        
+        Prop("tiltEnabled") { (view: ExpoBaiduMapView, tiltEnabled: Bool) in
+            view.mapView.isOverlookEnabled = tiltEnabled
+        }
+        
+        Prop("maxZoomLevel") { (view: ExpoBaiduMapView, maxZoomLevel: Float) in
+            view.mapView.maxZoomLevel = maxZoomLevel
+        }
+        
+        Prop("minZoomLevel") { (view: ExpoBaiduMapView, minZoomLevel: Float) in
+            view.mapView.minZoomLevel = minZoomLevel
+        }
+        
+        // Overlays
+        Prop("markers") { (view: ExpoBaiduMapView, markers: [Marker]) in
+            view.markers = markers
+        }
+        
+        Prop("polylines") { (view: ExpoBaiduMapView, polylines: [Polyline]) in
+            view.polylines = polylines
+        }
+        
+        Prop("arcs") { (view: ExpoBaiduMapView, arcs: [Arc]) in
+            view.arcs = arcs
+        }
+        
+        Prop("polygons") { (view: ExpoBaiduMapView, polygons: [Polygon]) in
+            view.polygons = polygons
+        }
+        
+        Prop("circles") { (view: ExpoBaiduMapView, circles: [Circle]) in
+            view.circles = circles
+        }
+        
         
         AsyncFunction("zoomIn") { (view: ExpoBaiduMapView) in
             view.mapView.zoomIn()

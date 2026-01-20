@@ -6,13 +6,25 @@ export type OnLoadEventPayload = {
 
 export type ExpoBaiduMapModuleEvents = {
   onChange: (params: ChangeEventPayload) => void;
-  onGetPoiCitySearchResult: (result: PoiSearchResult | { errorCode: number }) => void;
-  onGetPoiNearbySearchResult: (result: PoiSearchResult | { errorCode: number }) => void;
-  onGetPoiBoundsSearchResult: (result: PoiSearchResult | { errorCode: number }) => void;
-  onGetPoiDetailSearchResult: (result: PoiDetailResult | { errorCode: number }) => void;
-  onGetSuggestionResult: (result: PoiSuggestionResult | { errorCode: number }) => void;
+  onGetPoiCitySearchResult: (
+    result: PoiSearchResult | { errorCode: number },
+  ) => void;
+  onGetPoiNearbySearchResult: (
+    result: PoiSearchResult | { errorCode: number },
+  ) => void;
+  onGetPoiBoundsSearchResult: (
+    result: PoiSearchResult | { errorCode: number },
+  ) => void;
+  onGetPoiDetailSearchResult: (
+    result: PoiDetailResult | { errorCode: number },
+  ) => void;
+  onGetSuggestionResult: (
+    result: PoiSuggestionResult | { errorCode: number },
+  ) => void;
   onGetGeoCodeResult: (result: GeoCodeResult | { errorCode: number }) => void;
-  onGetReGeoCodeResult: (result: ReGeoCodeResult | { errorCode: number }) => void;
+  onGetReGeoCodeResult: (
+    result: ReGeoCodeResult | { errorCode: number },
+  ) => void;
 };
 
 export type ChangeEventPayload = {
@@ -25,6 +37,14 @@ export type UserTrackingMode = "heading" | "follow" | "followWithHeading";
 
 export type CoordinateType = "gps" | "common" | "bd09ll";
 
+export type LogoPosition =
+  | "leftBottom"
+  | "leftTop"
+  | "centerBottom"
+  | "centerTop"
+  | "rightBottom"
+  | "rightTop";
+
 export type ExpoBaiduMapViewProps = {
   style?: StyleProp<ViewStyle>;
   active: boolean;
@@ -33,13 +53,31 @@ export type ExpoBaiduMapViewProps = {
   backgroundColor?: ColorValue;
   backgroundImage?: string;
   region?: CoordinateRegion;
-  // limitMapRegion
+  limitMapRegion?: CoordinateRegion;
   compassPosition?: Point;
   centerCoordinate?: Coordinate2D;
   showsUserLocation?: boolean;
   inDoorMapEnabled?: boolean;
   userTrackingMode?: UserTrackingMode;
-  textMarkers?: TextMarker[];
+  // Map style properties
+  showsScale?: boolean;
+  showsZoomControls?: boolean;
+  rotationEnabled?: boolean;
+  doubleClickZoomEnabled?: boolean;
+  showsCompass?: boolean;
+  logoPosition?: LogoPosition;
+  logoOffset?: Point;
+  scrollEnabled?: boolean;
+  zoomEnabled?: boolean;
+  tiltEnabled?: boolean;
+  maxZoomLevel?: number;
+  minZoomLevel?: number;
+  // Overlays
+  markers?: Marker[];
+  polylines?: Polyline[];
+  arcs?: Arc[];
+  polygons?: Polygon[];
+  circles?: Circle[];
 };
 
 export type Coordinate2D = {
@@ -68,6 +106,96 @@ export type Size = {
 };
 
 /**
+ * 点标记覆盖物。
+ */
+export type Marker = {
+  /**
+   * 点标记的坐标点。
+   */
+  coordinate: Coordinate2D;
+  /**
+   * 点标记的唯一标识符。必填，因为你需要区分多个点标记。
+   */
+  key: string;
+  /**
+   * 点标记的标题。
+   */
+  title?: string;
+  /**
+   * 点标记的副标题。
+   */
+  subtitle?: string;
+  /**
+   * 点标记的图标。
+   */
+  icon?: string;
+  /**
+   * 点标记的旋转角度。
+   */
+  rotation?: number;
+  /**
+   * 点标记的透明度。
+   */
+  alpha?: number;
+  /**
+   * 点标记是否可点击。
+   */
+  isClickable?: boolean;
+  /**
+   * 点标记的Z轴顺序。
+   */
+  zIndex?: number;
+};
+
+/**
+ * 折线覆盖物。
+ */
+export type Polyline = {
+  /**
+   * 折线的坐标点数组。
+   */
+  coordinates: Coordinate2D[];
+  /**
+   * 折线的颜色。
+   */
+  strokeColor: string;
+  /**
+   * 折线的宽度。
+   */
+  strokeWidth: number;
+  /**
+   * 折线是否可点击。
+   */
+  isClickable?: boolean;
+  /**
+   * 折线的Z轴顺序。
+   */
+  zIndex?: number;
+};
+
+/**
+ * 弧线覆盖物。
+ */
+export type Arc = {
+  /**
+   * 弧线的坐标点数组。
+   */
+  coordinates: Coordinate2D[];
+  /**
+   * 弧线的颜色。
+   */
+  strokeColor: string;
+  /**
+   * 弧线的宽度。
+   */
+  lineWidth: number;
+  /**
+   * 弧线的Z轴顺序。
+   */
+  zIndex?: number;
+};
+
+/**
  * 多边形覆盖物。根据一堆坐标点生成一个多边形覆盖物。
  */
 export type Polygon = {
@@ -76,9 +204,25 @@ export type Polygon = {
    */
   coordinates: Coordinate2D[];
   /**
-   * 多边形的坐标点数组的长度。
+   * 多边形的填充颜色。
    */
-  count: number;
+  fillColor: string;
+  /**
+   * 多边形的边框颜色。
+   */
+  strokeColor: string;
+  /**
+   * 多边形的边框宽度。
+   */
+  strokeWidth: number;
+  /**
+   * 多边形是否可点击。
+   */
+  isClickable?: boolean;
+  /**
+   * 多边形的Z轴顺序。
+   */
+  zIndex?: number;
 };
 
 /**
@@ -105,33 +249,16 @@ export type Circle = {
    * 圆的边框宽度。
    */
   strokeWidth: number;
+  /**
+   * 圆是否可点击。
+   */
+  isClickable?: boolean;
+  /**
+   * 圆的Z轴顺序。
+   */
+  zIndex?: number;
 };
 
-export type TextMarker = {
-  /**
-   * 文本标记的坐标点。
-   */
-  center: Coordinate2D;
-  /**
-   * 文本标记的文本内容。
-   */
-  text: string;
-  /**
-   * 文本标记的背景颜色。
-   */
-  backgroundColor: string;
-  /**
-   * 文本标记的文本颜色。
-   */
-  textColor: string;
-  /**
-   * 文本标记的文本大小。
-   */
-  textSize: number;
-
-  // 其他自定义属性，可以增加id参数，用来区分大头针
-  [key: string]: any;
-};
 
 export type Bounds = {
   northEast: Coordinate2D;

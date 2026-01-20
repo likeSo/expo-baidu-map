@@ -1,5 +1,7 @@
 package expo.modules.baidumap
 
+import android.os.Bundle
+import androidx.annotation.ColorInt
 import com.baidu.mapapi.model.LatLng
 import com.baidu.mapapi.model.LatLngBounds
 import expo.modules.kotlin.records.Record
@@ -39,6 +41,13 @@ open class Coordinate2D : Record {
             "longitude" to longitude
         )
     }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putDouble("latitude", latitude)
+        bundle.putDouble("longitude", longitude)
+        return bundle
+    }
 }
 
 open class CoordinateSpan : Record {
@@ -53,6 +62,20 @@ open class CoordinateSpan : Record {
     constructor(latitudeDelta: Double = 0.0, longitudeDelta: Double = 0.0) {
         this.latitudeDelta = latitudeDelta
         this.longitudeDelta = longitudeDelta
+    }
+
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "latitudeDelta" to latitudeDelta,
+            "longitudeDelta" to longitudeDelta
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putDouble("latitudeDelta", latitudeDelta)
+        bundle.putDouble("longitudeDelta", longitudeDelta)
+        return bundle
     }
 
 //    fun toBMKSpan(): BMKCoordinateSpan {
@@ -80,6 +103,20 @@ open class CoordinateRegion : Record {
             .include(southWest)
             .include(northEast)
             .build()
+    }
+
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "center" to center.toMap(),
+            "span" to span.toMap()
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putBundle("center", center.toBundle())
+        bundle.putBundle("span", span.toBundle())
+        return bundle
     }
 
 //    fun toBMKRegion(): BMKCoordinateRegion {
@@ -116,6 +153,20 @@ open class Point : Record {
         this.y = y
     }
 
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "x" to x,
+            "y" to y
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putInt("x", x)
+        bundle.putInt("y", y)
+        return bundle
+    }
+
 //    fun toBMKPoint(): BMKPoint {
 //        return BMKPoint(x, y)
 //    }
@@ -135,6 +186,20 @@ open class Size : Record {
         this.height = height
     }
 
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "width" to width,
+            "height" to height
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putDouble("width", width)
+        bundle.putDouble("height", height)
+        return bundle
+    }
+
 //    fun toBMKSize(): BMKSize {
 //        return BMKSize(width, height)
 //    }
@@ -142,16 +207,57 @@ open class Size : Record {
 
 open class Polygon : Record {
     @Field
+    var id: String? = null
+    
+    @Field
     var coordinates: List<Coordinate2D> = emptyList()
 
     @Field
     var count: Int = 0
+    
+    @Field
+    @ColorInt
+    var strokeColor: Int? = null
+    
+    @Field
+    var fillColor: Int? = null
+    
+    @Field
+    var lineWidth: Int? = null
+    
+    @Field
+    var zIndex: Int? = null
 
     constructor() : this(emptyList(), 0)
 
     constructor(coordinates: List<Coordinate2D> = emptyList(), count: Int = 0) {
         this.coordinates = coordinates
         this.count = count
+    }
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "id" to id,
+            "coordinates" to coordinates.map { it.toMap() },
+            "count" to count,
+            "strokeColor" to strokeColor,
+            "fillColor" to fillColor,
+            "lineWidth" to lineWidth,
+            "zIndex" to zIndex
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("id", id)
+        val coordinateBundles = coordinates.map { it.toBundle() }.toTypedArray()
+        bundle.putParcelableArray("coordinates", coordinateBundles)
+        bundle.putInt("count", count)
+        strokeColor?.let { bundle.putInt("strokeColor", it) }
+        fillColor?.let { bundle.putInt("fillColor", it) }
+        lineWidth?.let { bundle.putFloat("lineWidth", it) }
+        zIndex?.let { bundle.putInt("zIndex", it) }
+        return bundle
     }
 
 //    fun fromBMKPolygon(bmkPolygon: BMKPolygon): Polygon {
@@ -179,6 +285,9 @@ open class Polygon : Record {
 
 open class Circle : Record {
     @Field
+    var id: String? = null
+    
+    @Field
     var center: Coordinate2D = Coordinate2D()
 
     @Field
@@ -188,10 +297,11 @@ open class Circle : Record {
     var fillColor: Int? = null
 
     @Field
+    @ColorInt
     var strokeColor: Int? = null
 
     @Field
-    var lineWidth: Float? = null
+    var lineWidth: Int? = null
 
     constructor() : this(Coordinate2D(), 0.0, null, null, null)
 
@@ -207,6 +317,28 @@ open class Circle : Record {
         this.fillColor = fillColor
         this.strokeColor = strokeColor
         this.lineWidth = lineWidth
+    }
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "id" to id,
+            "center" to center.toMap(),
+            "radius" to radius,
+            "fillColor" to fillColor,
+            "strokeColor" to strokeColor,
+            "lineWidth" to lineWidth
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("id", id)
+        bundle.putBundle("center", center.toBundle())
+        bundle.putDouble("radius", radius)
+        fillColor?.let { bundle.putInt("fillColor", it) }
+        strokeColor?.let { bundle.putInt("strokeColor", it) }
+        lineWidth?.let { bundle.putFloat("lineWidth", it) }
+        return bundle
     }
 
 //    fun fromBMKCircle(bmkCircle: BMKCircle): Circle {
@@ -246,12 +378,196 @@ open class Circle : Record {
 }
 
 class TextMarker: Record {
+    @Field
+    var id: String? = null
 
     @Field
     var center: Coordinate2D = Coordinate2D()
 
     @Field
     var text: String? = null
+    
+    @Field
+    var textColor: Int? = null
+    
+    @Field
+    var backgroundColor: Int? = null
+    
+    @Field
+    var fontSize: Int? = null
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "id" to id,
+            "center" to center.toMap(),
+            "text" to text,
+            "textColor" to textColor,
+            "backgroundColor" to backgroundColor,
+            "fontSize" to fontSize
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("id", id)
+        bundle.putBundle("center", center.toBundle())
+        bundle.putString("text", text)
+        textColor?.let { bundle.putInt("textColor", it) }
+        backgroundColor?.let { bundle.putInt("backgroundColor", it) }
+        fontSize?.let { bundle.putInt("fontSize", it) }
+        return bundle
+    }
+}
+
+open class Marker : Record {
+    @Field
+    var id: String? = null
+    
+    @Field
+    var coordinate: Coordinate2D = Coordinate2D()
+    
+    @Field
+    var title: String? = null
+    
+    @Field
+    var subtitle: String? = null
+    
+    @Field
+    var icon: String? = null
+    
+    @Field
+    var rotation: Float? = null
+    
+    @Field
+    var alpha: Float? = null
+    
+    @Field
+    var isClickable: Boolean? = null
+    
+    @Field
+    var zIndex: Int? = null
+    
+    constructor() : this(Coordinate2D())
+    
+    constructor(coordinate: Coordinate2D = Coordinate2D()) {
+        this.coordinate = coordinate
+    }
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "id" to id,
+            "coordinate" to coordinate.toMap(),
+            "title" to title,
+            "subtitle" to subtitle,
+            "icon" to icon,
+            "rotation" to rotation,
+            "alpha" to alpha,
+            "isClickable" to isClickable,
+            "zIndex" to zIndex
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("id", id)
+        bundle.putBundle("coordinate", coordinate.toBundle())
+        bundle.putString("title", title)
+        bundle.putString("subtitle", subtitle)
+        bundle.putString("icon", icon)
+        rotation?.let { bundle.putFloat("rotation", it) }
+        alpha?.let { bundle.putFloat("alpha", it) }
+        isClickable?.let { bundle.putBoolean("isClickable", it) }
+        zIndex?.let { bundle.putInt("zIndex", it) }
+        return bundle
+    }
+}
+
+open class Polyline : Record {
+    @Field
+    var id: String? = null
+    
+    @Field
+    var coordinates: List<Coordinate2D> = emptyList()
+    
+    @Field
+    var strokeColor: Int? = null
+    
+    @Field
+    var lineWidth: Float? = null
+    
+    @Field
+    var zIndex: Int? = null
+    
+    constructor() : this(emptyList())
+    
+    constructor(coordinates: List<Coordinate2D> = emptyList()) {
+        this.coordinates = coordinates
+    }
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "id" to id,
+            "coordinates" to coordinates.map { it.toMap() },
+            "strokeColor" to strokeColor,
+            "lineWidth" to lineWidth,
+            "zIndex" to zIndex
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("id", id)
+        val coordinateBundles = coordinates.map { it.toBundle() }.toTypedArray()
+        bundle.putParcelableArray("coordinates", coordinateBundles)
+        strokeColor?.let { bundle.putInt("strokeColor", it) }
+        lineWidth?.let { bundle.putFloat("lineWidth", it) }
+        zIndex?.let { bundle.putInt("zIndex", it) }
+        return bundle
+    }
+}
+
+open class Arc : Record {
+    @Field
+    var id: String? = null
+    
+    @Field
+    var coordinates: List<Coordinate2D> = emptyList()
+    
+    @Field
+    var strokeColor: Int? = null
+    
+    @Field
+    var lineWidth: Int? = null
+    
+    @Field
+    var zIndex: Int? = null
+    
+    constructor() : this(emptyList())
+    
+    constructor(coordinates: List<Coordinate2D> = emptyList()) {
+        this.coordinates = coordinates
+    }
+    
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "id" to id,
+            "coordinates" to coordinates.map { it.toMap() },
+            "strokeColor" to strokeColor,
+            "lineWidth" to lineWidth,
+            "zIndex" to zIndex
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("id", id)
+        val coordinateBundles = coordinates.map { it.toBundle() }.toTypedArray()
+        bundle.putParcelableArray("coordinates", coordinateBundles)
+        strokeColor?.let { bundle.putInt("strokeColor", it) }
+        lineWidth?.let { bundle.putInt("lineWidth", it) }
+        zIndex?.let { bundle.putInt("zIndex", it) }
+        return bundle
+    }
 }
 
 open class Bounds : Record {
@@ -266,6 +582,20 @@ open class Bounds : Record {
     constructor(northEast: Coordinate2D = Coordinate2D(), southWest: Coordinate2D = Coordinate2D()) {
         this.northEast = northEast
         this.southWest = southWest
+    }
+
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "northEast" to northEast.toMap(),
+            "southWest" to southWest.toMap()
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putBundle("northEast", northEast.toBundle())
+        bundle.putBundle("southWest", southWest.toBundle())
+        return bundle
     }
 
     fun toLatLngBounds(): LatLngBounds {
@@ -307,6 +637,32 @@ open class PoiCitySearchOptions : Record {
 
     @Field
     var returnAddress: Boolean? = null
+
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "city" to city,
+            "keyword" to keyword,
+            "pageIndex" to pageIndex,
+            "pageSize" to pageSize,
+            "scope" to scope,
+            "tag" to tag,
+            "cityLimit" to cityLimit,
+            "returnAddress" to returnAddress
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("city", city)
+        bundle.putString("keyword", keyword)
+        pageIndex?.let { bundle.putInt("pageIndex", it) }
+        pageSize?.let { bundle.putInt("pageSize", it) }
+        bundle.putString("scope", scope)
+        bundle.putString("tag", tag)
+        cityLimit?.let { bundle.putBoolean("cityLimit", it) }
+        returnAddress?.let { bundle.putBoolean("returnAddress", it) }
+        return bundle
+    }
 }
 
 open class PoiNearbySearchOptions : Record {
@@ -336,6 +692,34 @@ open class PoiNearbySearchOptions : Record {
 
     @Field
     var returnAddress: Boolean? = null
+
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "keyword" to keyword,
+            "location" to location.toMap(),
+            "radius" to radius,
+            "pageIndex" to pageIndex,
+            "pageSize" to pageSize,
+            "scope" to scope,
+            "tag" to tag,
+            "radiusLimit" to radiusLimit,
+            "returnAddress" to returnAddress
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("keyword", keyword)
+        bundle.putBundle("location", location.toBundle())
+        radius?.let { bundle.putInt("radius", it) }
+        pageIndex?.let { bundle.putInt("pageIndex", it) }
+        pageSize?.let { bundle.putInt("pageSize", it) }
+        bundle.putString("scope", scope)
+        bundle.putString("tag", tag)
+        radiusLimit?.let { bundle.putBoolean("radiusLimit", it) }
+        returnAddress?.let { bundle.putBoolean("returnAddress", it) }
+        return bundle
+    }
 }
 
 open class PoiBoundsSearchOptions : Record {
@@ -359,11 +743,47 @@ open class PoiBoundsSearchOptions : Record {
 
     @Field
     var returnAddress: Boolean? = null
+
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "keyword" to keyword,
+            "bounds" to bounds.toMap(),
+            "pageIndex" to pageIndex,
+            "pageSize" to pageSize,
+            "scope" to scope,
+            "tag" to tag,
+            "returnAddress" to returnAddress
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("keyword", keyword)
+        bundle.putBundle("bounds", bounds.toBundle())
+        pageIndex?.let { bundle.putInt("pageIndex", it) }
+        pageSize?.let { bundle.putInt("pageSize", it) }
+        bundle.putString("scope", scope)
+        bundle.putString("tag", tag)
+        returnAddress?.let { bundle.putBoolean("returnAddress", it) }
+        return bundle
+    }
 }
 
 open class PoiDetailSearchOptions : Record {
     @Field
     var uid: String = ""
+
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "uid" to uid
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("uid", uid)
+        return bundle
+    }
 }
 
 open class PoiSuggestionOptions : Record {
@@ -381,6 +801,26 @@ open class PoiSuggestionOptions : Record {
 
     @Field
     var hotWord: Boolean? = null
+
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "keyword" to keyword,
+            "city" to city,
+            "cityLimit" to cityLimit,
+            "location" to location?.toMap(),
+            "hotWord" to hotWord
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("keyword", keyword)
+        bundle.putString("city", city)
+        cityLimit?.let { bundle.putBoolean("cityLimit", it) }
+        location?.let { bundle.putBundle("location", it.toBundle()) }
+        hotWord?.let { bundle.putBoolean("hotWord", it) }
+        return bundle
+    }
 }
 
 open class PoiSearchPagination : Record {
@@ -403,6 +843,15 @@ open class PoiSearchPagination : Record {
             "totalCount" to totalCount,
             "totalPage" to totalPage
         )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putInt("pageIndex", pageIndex)
+        bundle.putInt("pageSize", pageSize)
+        bundle.putInt("totalCount", totalCount)
+        bundle.putInt("totalPage", totalPage)
+        return bundle
     }
 }
 
@@ -447,6 +896,20 @@ open class PoiInfoRecord : Record {
             "tag" to tag
         )
     }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("uid", uid)
+        bundle.putString("name", name)
+        location?.let { bundle.putBundle("location", it.toBundle()) }
+        bundle.putString("address", address)
+        bundle.putString("province", province)
+        bundle.putString("city", city)
+        bundle.putString("area", area)
+        bundle.putString("phone", phone)
+        bundle.putString("tag", tag)
+        return bundle
+    }
 }
 
 open class PoiSearchResultRecord : Record {
@@ -461,6 +924,14 @@ open class PoiSearchResultRecord : Record {
             "pagination" to pagination.toMap(),
             "pois" to pois.map { it.toMap() }
         )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putBundle("pagination", pagination.toBundle())
+        val poiBundles = pois.map { it.toBundle() }.toTypedArray()
+        bundle.putParcelableArray("pois", poiBundles)
+        return bundle
     }
 }
 
@@ -505,6 +976,20 @@ open class PoiDetailInfoRecord : Record {
             "tag" to tag
         )
     }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("uid", uid)
+        bundle.putString("name", name)
+        location?.let { bundle.putBundle("location", it.toBundle()) }
+        bundle.putString("address", address)
+        bundle.putString("province", province)
+        bundle.putString("city", city)
+        bundle.putString("area", area)
+        bundle.putString("phone", phone)
+        bundle.putString("tag", tag)
+        return bundle
+    }
 }
 
 open class PoiDetailResultRecord : Record {
@@ -515,6 +1000,15 @@ open class PoiDetailResultRecord : Record {
         return mapOf(
             "poiList" to poiList?.map { it.toMap() }
         )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        poiList?.let { 
+            val poiBundles = it.map { poi -> poi.toBundle() }.toTypedArray()
+            bundle.putParcelableArray("poiList", poiBundles)
+        }
+        return bundle
     }
 }
 
@@ -543,6 +1037,16 @@ open class PoiSuggestionRecord : Record {
             "location" to location?.toMap()
         )
     }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("uid", uid)
+        bundle.putString("key", key)
+        bundle.putString("city", city)
+        bundle.putString("district", district)
+        location?.let { bundle.putBundle("location", it.toBundle()) }
+        return bundle
+    }
 }
 
 open class PoiSuggestionResultRecord : Record {
@@ -553,6 +1057,13 @@ open class PoiSuggestionResultRecord : Record {
         return mapOf(
             "suggestions" to suggestions.map { it.toMap() }
         )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        val suggestionBundles = suggestions.map { it.toBundle() }.toTypedArray()
+        bundle.putParcelableArray("suggestions", suggestionBundles)
+        return bundle
     }
 }
 
@@ -568,6 +1079,24 @@ open class GeoCoderOptions : Record {
     
     @Field
     var retCoordType: String? = null
+
+    fun toMap(): Map<String, Any?> {
+        return mapOf(
+            "address" to address,
+            "city" to city,
+            "output" to output,
+            "retCoordType" to retCoordType
+        )
+    }
+    
+    fun toBundle(): Bundle {
+        val bundle = Bundle()
+        bundle.putString("address", address)
+        bundle.putString("city", city)
+        bundle.putString("output", output)
+        bundle.putString("retCoordType", retCoordType)
+        return bundle
+    }
 }
 
 open class ReGeoCoderOptions : Record {

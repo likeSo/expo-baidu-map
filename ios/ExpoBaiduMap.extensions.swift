@@ -8,21 +8,18 @@
 import Foundation
 import BaiduMapAPI_Base
 import BaiduMapAPI_Map
+import ExpoModulesCore
 
 
-var circleDataKey = "ExpoBaiduMapCircleDataKey"
-extension BMKCircle {
-    var circleData: Circle? {
+var shapeRecordKey = "ExpoBaiduMapMarkerRecordKey"
+extension BMKShape {
+    var recordData: Record? {
         get {
-            return objc_getAssociatedObject(self, circleDataKey) as? Circle
+            return objc_getAssociatedObject(self, shapeRecordKey) as? Record
         }
+        
         set {
-            objc_setAssociatedObject(self, circleDataKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            objc_setAssociatedObject(self, shapeRecordKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         }
     }
-}
-
-
-extension BMKText {
-    var textData: TextMarker?
 }

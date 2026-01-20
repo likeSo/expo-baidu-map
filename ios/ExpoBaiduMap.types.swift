@@ -102,6 +102,77 @@ struct Polygon: Record {
     var coordinates: [Coordinate2D] = []
     @Field
     var count = 0
+    @Field
+    var fillColor: UIColor?
+    @Field
+    var strokeColor: UIColor?
+    @Field
+    var lineWidth: CGFloat?
+    @Field
+    var zIndex: Int?
+}
+
+struct Arc: Record {
+    init() { }
+    init(coordinates: [Coordinate2D] = []) {
+        self.coordinates = coordinates
+    }
+    
+    @Field
+    var coordinates: [Coordinate2D] = []
+    @Field
+    var strokeColor: UIColor?
+    @Field
+    var lineWidth: CGFloat?
+    @Field
+    var zIndex: Int?
+}
+
+class Marker: Record {
+    required init() { }
+    init(coordinate: Coordinate2D = .init()) {
+        self.coordinate = coordinate
+    }
+    
+    @Field
+    var coordinate: Coordinate2D = .init()
+    @Field
+    var title: String?
+    @Field
+    var key: String = UUID().uuidString
+    @Field
+    var subtitle: String?
+    @Field
+    var icon: String?
+    @Field
+    var rotation: CGFloat?
+    @Field
+    var alpha: CGFloat?
+    @Field
+    var isClickable: Bool?
+    @Field
+    var zIndex: Int?
+}
+
+struct Polyline: Record {
+    init() { }
+    init(coordinates: [Coordinate2D] = [], count: Int = 0) {
+        self.coordinates = coordinates
+        self.count = count
+    }
+    
+    @Field
+    var coordinates: [Coordinate2D] = []
+    @Field
+    var count = 0
+    @Field
+    var strokeColor: UIColor?
+    @Field
+    var strokeWidth: CGFloat?
+    @Field
+    var isClickable: Bool?
+    @Field
+    var zIndex: Int?
 }
 
 final class Circle: Record {
@@ -122,24 +193,6 @@ final class Circle: Record {
     
     @Field
     var lineWidth: CGFloat?
-}
-
-final class TextMarker: Record {
-    
-    @Field
-    var center: Coordinate2D = .init()
-    
-    @Field
-    var text: String?
-    
-    @Field
-    var textColor: UIColor?
-    
-    @Field
-    var textSize: CGFloat?
-    
-    @Field
-    var backgroundColor: UIColor?
 }
 
 struct PoiCitySearchOptions: Record {

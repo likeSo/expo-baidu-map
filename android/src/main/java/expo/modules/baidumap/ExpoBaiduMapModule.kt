@@ -6,6 +6,7 @@ import androidx.annotation.ColorInt
 import com.baidu.mapapi.CoordType
 import com.baidu.mapapi.SDKInitializer
 import com.baidu.mapapi.map.BaiduMap
+import com.baidu.mapapi.map.LogoPosition
 import com.baidu.mapapi.map.MapLanguage
 import com.baidu.mapapi.map.MapStatus
 import com.baidu.mapapi.map.MapStatusUpdateFactory
@@ -537,7 +538,90 @@ class ExpoBaiduMapModule : Module() {
                 view.textMarkers = textMarkers
                 view.reloadOverlays()
             }
-
+            
+            // Map style properties
+            Prop("showsScale") { view: ExpoBaiduMapView, showsScale: Boolean ->
+                view.mapView.showScaleControl(showsScale)
+            }
+            
+            Prop("showsZoomControls") { view: ExpoBaiduMapView, showsZoomControls: Boolean ->
+                view.mapView.showZoomControls(showsZoomControls)
+            }
+            
+            Prop("rotationEnabled") { view: ExpoBaiduMapView, rotationEnabled: Boolean ->
+                view.mapView.map.uiSettings.isRotateGesturesEnabled = rotationEnabled
+            }
+            
+            Prop("doubleClickZoomEnabled") { view: ExpoBaiduMapView, doubleClickZoomEnabled: Boolean ->
+                view.mapView.map.uiSettings.setDoubleClickZoomEnabled(doubleClickZoomEnabled)
+            }
+            
+            Prop("showsCompass") { view: ExpoBaiduMapView, showsCompass: Boolean ->
+                view.mapView.map.uiSettings.isCompassEnabled = showsCompass
+            }
+            
+            Prop("logoPosition") { view: ExpoBaiduMapView, point: String ->
+                view.mapView.logoPosition = when (point) {
+                    "leftBottom" -> LogoPosition.logoPostionleftBottom
+                    "leftTop" -> LogoPosition.logoPostionleftTop
+                    "centerBottom" -> LogoPosition.logoPostionCenterBottom
+                    "centerTop" -> LogoPosition.logoPostionCenterTop
+                    "rightBottom" -> LogoPosition.logoPostionRightBottom
+                    "rightTop" -> LogoPosition.logoPostionRightTop
+                    else -> LogoPosition.logoPostionleftBottom
+                }
+            }
+            
+            Prop("scrollEnabled") { view: ExpoBaiduMapView, scrollEnabled: Boolean ->
+                view.mapView.map.uiSettings.isScrollGesturesEnabled = scrollEnabled
+            }
+            
+            Prop("zoomEnabled") { view: ExpoBaiduMapView, zoomEnabled: Boolean ->
+                view.mapView.map.uiSettings.isZoomGesturesEnabled = zoomEnabled
+            }
+            
+            Prop("tiltEnabled") { view: ExpoBaiduMapView, tiltEnabled: Boolean ->
+                view.mapView.map.uiSettings.isOverlookingGesturesEnabled = tiltEnabled
+            }
+            
+            Prop("maxZoomLevel") { view: ExpoBaiduMapView, maxZoomLevel: Float ->
+                view.mapView.map.setMaxAndMinZoomLevel(maxZoomLevel, view.mapView.map.minZoomLevel)
+            }
+            
+            Prop("minZoomLevel") { view: ExpoBaiduMapView, minZoomLevel: Float ->
+                view.mapView.map.setMaxAndMinZoomLevel(view.mapView.map.maxZoomLevel, minZoomLevel)
+            }
+            
+            // Overlay properties
+            Prop("markers") { view: ExpoBaiduMapView, markers: Array<Marker> ->
+                view.markers = markers
+                view.reloadOverlays()
+            }
+            
+            Prop("polylines") { view: ExpoBaiduMapView, polylines: Array<Polyline> ->
+                view.polylines = polylines
+                view.reloadOverlays()
+            }
+            
+            Prop("arcs") { view: ExpoBaiduMapView, arcs: Array<Arc> ->
+                view.arcs = arcs
+                view.reloadOverlays()
+            }
+            
+            Prop("polygons") { view: ExpoBaiduMapView, polygons: Array<Polygon> ->
+                view.polygons = polygons
+                view.reloadOverlays()
+            }
+            
+            Prop("circles") { view: ExpoBaiduMapView, circles: Array<Circle> ->
+                view.circles = circles
+                view.reloadOverlays()
+            }
+            
+            Prop("textMarkers") { view: ExpoBaiduMapView, textMarkers: Array<TextMarker> ->
+                view.textMarkers = textMarkers
+                view.reloadOverlays()
+            }
 
             AsyncFunction("zoomIn") { view: ExpoBaiduMapView ->
 //                view.mapView.map.animateMapStatus(MapStatusUpdateFactory.newMapStatus(MapStatus.Builder().zoom()))

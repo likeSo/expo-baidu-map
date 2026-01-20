@@ -22,7 +22,7 @@ declare class ExpoBaiduMapModule extends NativeModule<ExpoBaiduMapModuleEvents> 
   poiSearchInBounds(options: PoiBoundsSearchOptions): Promise<boolean>;
   poiSearchDetail(options: PoiDetailSearchOptions): Promise<boolean>;
   poiSuggestion(options: PoiSuggestionOptions): Promise<boolean>;
-  
+
   geoCode(options: GeoCoderOptions): Promise<boolean>;
   reGeoCode(options: ReGeoCoderOptions): Promise<boolean>;
 }
